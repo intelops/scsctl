@@ -13,7 +13,8 @@ Tool for automating Vulnerability Risk Management and Software Supply Chain Secu
 	- Falco Security
 	- KubViz
 	- Dive
-	- Skopeo 
+	- Skopeo
+	- SlimToolKit 
 - DB:
 	- ClickHouse
 - Reports: (dependency packages and SBOM reports)
