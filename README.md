@@ -29,7 +29,7 @@ Tool for automating Vulnerability Risk Management for enhancing Software Supply 
 	- Remove unused dependencies from codebase 
 	- Generate new container image with only used dependencies 
 	- Update the versions of the dependencies based on where the packages are available (opensource or private arti-factory) and then generate new container image
-	- Generate new containers using Alpine as the first option and [Wolfi](https://github.com/wolfi-dev) Linux as 2nd option for distroless images
+	- Generate new containers using Alpine as the first option for building less footprint images and [Wolfi](https://github.com/wolfi-dev) Linux as 2nd option for building distroless container images
  	- Scheduling feature for querying the dependencies data at different internals and consolidating the data to figure out what packages were used between the time duration set
   	- Leverage Dive, Skopeo & SlimToolKit to suggest rewriting the dockerfile with multi-stage docker build practices and best practices to optimize the container image
   	- Leverage integration & data from Trivy, Snyk, and Tenable to provide prioritization options to patch high, medium, and zero-day vulnerabilities only as & when required 
