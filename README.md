@@ -15,7 +15,10 @@ Tool for automating Vulnerability Risk Management for enhancing Software Supply 
 	- KubViz
 	- Dive
 	- Skopeo
-	- SlimToolKit 
+	- SlimToolKit
+ 	- Buildah
+  	- Podman
+  	- Docker Build tool
 - Integration with DB(s):
 	- ClickHouse
  	- Cassandra 
@@ -31,7 +34,7 @@ Tool for automating Vulnerability Risk Management for enhancing Software Supply 
 	- Update the versions of the dependencies based on where the packages are available (opensource or private arti-factory) and then generate new container image
 	- Generate new containers using Alpine as the first option for building less footprint images and [Wolfi](https://github.com/wolfi-dev) Linux as 2nd option for building distroless container images
  	- Scheduling feature for querying the dependencies data at different internals and consolidating the data to figure out what packages were used between the time duration set
-  	- Leverage Dive, Skopeo & SlimToolKit to suggest rewriting the dockerfile with multi-stage docker build practices and best practices to optimize the container image
+  	- Leverage Dive, Skopeo & SlimToolKit to suggest rewriting the dockerfile with multi-stage docker build practices and best practices to optimize the container image and build container images using the Buildah or Podman, or Docker, which are added as plug-ins into scsctl 
   	- Leverage integration & data from Trivy, Snyk, and Tenable to provide prioritization options to patch high, medium, and zero-day vulnerabilities only as & when required 
 
 
