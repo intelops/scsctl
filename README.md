@@ -50,7 +50,7 @@ Before starting, make sure you have the following installed and configured:
 1. Docker - Make sure docker is running, and the image you want to scan is present in the docker daemon
 2. Trivy - Trivy will be automatically installed if not present
 3. Pyroscope - Pyroscope is up and running, and profiling data is being collected from the application you want to scan. You also need the Pyroscope server URL and the application name
-4. ClickHouse (optional) - If you want to save the data, then make sure ClickHouse is up and running, and you have the ClickHouse server URL and the database details
+4. ClickHouse (optional) - If you want to save the data collected by SCSCTL for historical analysis purpose, then make sure ClickHouse is up and running and you have the ClickHouse server URL and the database details
 	> If you don't want to save the data, then you can skip this step.
 
 	> If you want to save the data, then please set the following environment variables:
