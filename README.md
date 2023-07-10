@@ -1,5 +1,7 @@
 # scsctl
-Tool for automating Vulnerability Risk Management for enhancing Software Supply Chain Security Measures.
+> We are continuously adding the listed features
+
+CLI/CI Tool for Automating Vulnerability Management for Enhancing Software Supply Chain Security Measures.
 
 ### Features
 - Integration with other Tools & Platforms:
