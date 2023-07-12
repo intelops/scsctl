@@ -46,7 +46,8 @@ CLI/CI Tool for Automating Vulnerability Management for Enhancing Software Suppl
 
 > Future goals:
 > - Visualize code call flow like call graph, context, AST, CFG, PDG, etc., as graph diagrams using code property graph concept and neo4j graph database. Also, show dependencies graph flow from static and run-time data collected by profiling tools & falco, along with vulnerabilities, plus historical data by mapping historical changes in the code flow & packages. Something like Graph Buddy and Context Buddy as IDE plug-ins.
-> - Another visualization is by showing graph flow of all the dependencies in the application, containers, k8s manifests, etc., with all the changes happening when scsctl is used for automation.  
+> - Another visualization is by showing graph flow of all the dependencies in the application, containers, k8s manifests, etc., with all the changes happening when scsctl is used for automation.
+> - Integration with [deps.dev](https://deps.dev/) API to create graph view of the dependencies. 
 
 ### Usage
 
