@@ -95,3 +95,6 @@ Example:
 scsctl scan --docker_image_name test:latest --docker_file_folder_path /home/test --pyroscope_url http://localhost:4040 --pyroscope_app_name test
 ```
 
+--------------------------------------------------
+## Inform security issues of this project: 
+[Security](SECURITY.md )
