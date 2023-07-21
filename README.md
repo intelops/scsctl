@@ -29,7 +29,8 @@ CLI/CI Tool for Automating Vulnerability Management for Enhancing Software Suppl
 	- SBOM
 	- Report using Profiling tools Data
 	- Report using Falco security tool using its run-time dependency packages tracking policy feature
-	- Unnecessary packages used in container image by observing the run-time usage 
+	- Unnecessary packages used in container image by observing the run-time usage
+ 	- Software Composition Analysis (SCA) report 
 - Automation:
 	- Report unused packages with full details 
 	- Remove unused dependencies from the codebase 
@@ -42,7 +43,8 @@ CLI/CI Tool for Automating Vulnerability Management for Enhancing Software Suppl
   	- Set SCSCTL as CI pipeline job
   	- Send notifications on packages update and new container image build
   	- Submit new PR/MR along with signed git commit when packages update in codebase is done
-  	- Build the new container image by using cosign keyless mode (preferred method to use)  or key mode  
+  	- Build the new container image by using cosign keyless mode (preferred method to use)  or key mode
+
 
 > Future goals:
 > - Visualize code call flow like call graph, context, AST, CFG, PDG, etc., as graph diagrams using code property graph concept and neo4j graph database. Also, show dependencies graph flow from static and run-time data collected by profiling tools & falco, along with vulnerabilities, plus historical data by mapping historical changes in the code flow & packages. Something like Graph Buddy and Context Buddy as IDE plug-ins.
