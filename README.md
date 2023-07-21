@@ -47,7 +47,11 @@ CLI/CI Tool for Automating Vulnerability Management for Enhancing Software Suppl
 > Future goals:
 > - Visualize code call flow like call graph, context, AST, CFG, PDG, etc., as graph diagrams using code property graph concept and neo4j graph database. Also, show dependencies graph flow from static and run-time data collected by profiling tools & falco, along with vulnerabilities, plus historical data by mapping historical changes in the code flow & packages. Something like Graph Buddy and Context Buddy as IDE plug-ins.
 > - Another visualization is by showing graph flow of all the dependencies in the application, containers, k8s manifests, etc., with all the changes happening when scsctl is used for automation.
-> - Integration with [deps.dev](https://deps.dev/) API to create graph view of the dependencies. 
+> - Integration with [deps.dev](https://deps.dev/) API to create graph view of the dependencies.
+> - Integration with Qualys, Nessus, Rapid 7, DeepFactor, etc.
+> - Productivity and User Experience - Previous & Updated Vulnerability detail views, Display of asset selection rules to view vulnerability details per service/node/cluster/namespace/pod/etc. and also overall view, etc.
+> - Risk-based Posture Management - Risk Configuration + Risk Customizations, EPSS factor in risk calculation, etc.
+> - Manage Vulnerabilities and Assets - Filter vulnerabilities by asset & vulnerability tags, export vulnerability data in csv or directly generate graphs using clickhouse/cassandra as datasource, Linking of Teams to Apps/Environments/Platforms/Clusters/Vulnerabilities/etc., multi-selection for varieties of filters to visualize the data in different charts, etc. 
 
 ### Usage
 
