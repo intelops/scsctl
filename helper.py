@@ -46,7 +46,7 @@ def connect_to_db(database_name: str):
     port = os.getenv(key="CLICKHOUSE_PORT", default="8123")
     host = os.getenv(key="CLICKHOUSE_HOST", default="localhost")
     try:
-        conn = connect(f"clickhouse://{host}",user=username, password=password,port=port)
+        conn = connect(f"clickhouse://{host}", user=username, password=password, port=port)
         cursor = conn.cursor()
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name};")
         return cursor
@@ -71,9 +71,7 @@ def install_trivy():
 def get_sbom_report(app_details: AppDetails):
     # Check if Trivy is installed
     try:
-        result = subprocess.run(
-            "$HOME/.local/bin/trivy --version", capture_output=True, shell=True
-        )
+        result = subprocess.run("$HOME/.local/bin/trivy --version", capture_output=True, shell=True)
         if result.returncode != 0:
             click.echo("\nTrivy is not installed. Installing Trivy...")
             install_trivy()
@@ -132,9 +130,7 @@ def print_pyroscope_packages(pyroscope_package_names):
             headers=headers,
             tablefmt="grid",
             maxcolwidths=width,
-            showindex=list(
-                range(index + 1, index + len(data[index : index + chunk_size]) + 1)
-            ),
+            showindex=list(range(index + 1, index + len(data[index : index + chunk_size]) + 1)),
         )
         click.echo(table)
 
@@ -146,16 +142,12 @@ def print_pyroscope_packages(pyroscope_package_names):
         index += chunk_size
 
 
-def compare_and_find_extra_packages(pyroscope_package_names, sbom_package_names):
+def compare_and_find_extra_packages(pyroscope_package_names, sbom_package_names, falco_found_extra_packages=[]):
     click.echo("Comparing packages from Pyroscope and SBOM...")
     sbom_package_names = json.loads(sbom_package_names)
     sbom_package_names = sbom_package_names["Results"]
 
-    sbom_packages = [
-        item["Vulnerabilities"]
-        for item in sbom_package_names
-        if item["Class"] != "lang-pkgs"
-    ][0]
+    sbom_packages = [item["Vulnerabilities"] for item in sbom_package_names if item["Class"] != "lang-pkgs"][0]
     sbom_package_names = list(set([x["PkgName"] for x in sbom_packages]))
 
     if "total" in pyroscope_package_names:
@@ -169,6 +161,9 @@ def compare_and_find_extra_packages(pyroscope_package_names, sbom_package_names)
             if item in pyroscope_item:
                 final_res.append(item)
     extra_packages = list(set(sbom_package_names) - set(final_res))
+
+    # Add falco found extra packages to the list and remove duplicates
+    extra_packages = list(set(extra_packages + falco_found_extra_packages))
 
     grouped_packages = {}
     for package in extra_packages:
@@ -185,9 +180,7 @@ def compare_and_find_extra_packages(pyroscope_package_names, sbom_package_names)
     headers = ["Package Names", "Vulnerability IDs", "Severities"]
     data = []
     for item in grouped_packages:
-        severity_joined = "\n".join(
-            f"{k} - {v}" for k, v in grouped_packages[item]["Severity"].items()
-        )
+        severity_joined = "\n".join(f"{k} - {v}" for k, v in grouped_packages[item]["Severity"].items())
         data.append(
             [
                 item,
@@ -204,9 +197,7 @@ def compare_and_find_extra_packages(pyroscope_package_names, sbom_package_names)
 def print_sbom_report(sbom_report):
     sbom_report = json.loads(sbom_report)
     sbom_report = sbom_report["Results"]
-    sbom_report = [
-        item["Vulnerabilities"] for item in sbom_report if item["Class"] != "lang-pkgs"
-    ][0]
+    sbom_report = [item["Vulnerabilities"] for item in sbom_report if item["Class"] != "lang-pkgs"][0]
 
     chunk_size = 200
     index = 0
@@ -237,9 +228,7 @@ def print_sbom_report(sbom_report):
             headers=headers,
             tablefmt="grid",
             maxcolwidths=width,
-            showindex=list(
-                range(index + 1, index + len(data[index : index + chunk_size]) + 1)
-            ),
+            showindex=list(range(index + 1, index + len(data[index : index + chunk_size]) + 1)),
         )
         click.echo(table)
 
@@ -251,9 +240,7 @@ def print_sbom_report(sbom_report):
         index += chunk_size
 
 
-def modify_and_build_docker_image(
-    folder_path: str, package_nammes: list, bacth_id: str
-):
+def modify_and_build_docker_image(folder_path: str, package_nammes: list, bacth_id: str):
     # Make a copy of folder in a ./temp folder, create folder if it doesn't exist
     if os.path.exists("./temp"):
         shutil.rmtree("./temp/")
@@ -286,7 +273,7 @@ def modify_and_build_docker_image(
 def save_sbom_data(sbom_data, batch_id):
     database_name = "scsctl"
     cursor = connect_to_db(database_name=database_name)
-    if(cursor):
+    if cursor:
         table_name = "sbom_report"
 
         create_table_query = f"""
@@ -310,10 +297,11 @@ def save_sbom_data(sbom_data, batch_id):
 
         cursor.close()
 
+
 def save_pyroscope_data(pyroscope_data, batch_id):
     database_name = "scsctl"
     cursor = connect_to_db(database_name=database_name)
-    if(cursor):
+    if cursor:
         table_name = "pyroscope_report"
 
         create_table_query = f"""
