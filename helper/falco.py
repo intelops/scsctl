@@ -4,6 +4,7 @@ import click
 import questionary
 from tabulate import tabulate
 from datetime import datetime
+from helper.clickhouse import connect_to_db
 
 
 def read_logs_from_log(pod_name, namespace):
@@ -97,8 +98,9 @@ def print_falco_packages(falco_package_names):
         index += chunk_size
 
 
-def save_falco_data(cursor, falco_data, batch_id):
+def save_falco_data(falco_data, batch_id):
     database_name = "scsctl"
+    cursor = connect_to_db(database_name=database_name)
     if cursor:
         table_name = "falco_report"
 
