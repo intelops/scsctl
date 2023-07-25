@@ -10,6 +10,7 @@ from helper import (
     modify_and_build_docker_image,
     save_sbom_data,
     save_pyroscope_data,
+    connect_to_db,
 )
 import click
 import questionary
@@ -17,6 +18,7 @@ from helper_g.falco import (
     parse_logs_and_get_package_paths,
     compare_and_find_extra_packages_using_falco,
     print_falco_packages,
+    save_falco_data,
 )
 
 import yaml
@@ -136,6 +138,10 @@ def scan(
             if db_enabled:
                 save_sbom_data(sbom_data=sbom_report, batch_id=batch_id)
                 save_pyroscope_data(pyroscope_data=pyroscope_data, batch_id=batch_id)
+                cursor = connect_to_db("scsctl")
+                if falco_enabled:
+                    save_falco_data(cursor, falco_data=falco_found_extra_packages, batch_id=batch_id)
+
         else:
             scan_status = False
             click.echo("\nError fetching data from pyroscope... Exiting")

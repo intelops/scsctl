@@ -3,6 +3,7 @@ import json
 import click
 import questionary
 from tabulate import tabulate
+from datetime import datetime
 
 
 def read_logs_from_log(pod_name, namespace):
@@ -94,3 +95,30 @@ def print_falco_packages(falco_package_names):
                 break
 
         index += chunk_size
+
+
+def save_falco_data(cursor, falco_data, batch_id):
+    database_name = "scsctl"
+    if cursor:
+        table_name = "falco_report"
+
+        create_table_query = f"""
+        CREATE TABLE IF NOT EXISTS {database_name}.{table_name} (
+            batch_id String,
+            created_at timestamp,
+            falco_report text
+        )
+        ENGINE = MergeTree()
+        PRIMARY KEY (batch_id, created_at)
+        """
+
+        cursor.execute(create_table_query)
+
+        click.echo(f"Inserting data into pyroscope_report table - bacth_id - {batch_id}")
+
+        cursor.execute(
+            f"INSERT INTO {database_name}.{table_name} (batch_id, created_at, falco_report) VALUES",
+            [{"batch_id": batch_id, "created_at": datetime.now(), "falco_report": str(falco_data)}],
+        )
+
+        cursor.close()
