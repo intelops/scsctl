@@ -19,6 +19,8 @@ from helper_g.falco import (
     print_falco_packages,
 )
 
+import yaml
+
 
 @click.group()
 def cli():
@@ -30,22 +32,20 @@ batch_id = f"scsctl_{current_datetime}"
 
 
 @click.command()
-@click.option("--pyroscope_app_name", prompt="Enter pyroscope app name", help="Name of the pyroscope app")
-@click.option("--docker_image_name", prompt="Enter docker image name", help="Name of the docker image")
-@click.option("--pyroscope_url", prompt="Enter pyroscope url", help="Url of the pyroscope app")
+@click.option("--pyroscope_app_name", default=None, help="Name of the pyroscope app")
+@click.option("--docker_image_name", default=None, help="Name of the docker image")
+@click.option("--pyroscope_url", default=None, help="Url of the pyroscope app")
 @click.option(
     "--falco_pod_name",
-    prompt="Enter falco pod name",
-    help="Falco pod name",
     default=None,
+    help="Falco pod name",
     is_flag=False,
     flag_value=None,
 )
 @click.option(
     "--falco_target_deployment_name",
-    prompt="Enter deployment name of the falco target",
-    help="Deployment name of the falco target",
     default=None,
+    help="Deployment name of the falco target",
     is_flag=False,
     flag_value=None,
 )
@@ -54,16 +54,57 @@ batch_id = f"scsctl_{current_datetime}"
 @click.option(
     "--docker_file_folder_path", help="Path of the docker file to rebuild", default=None, is_flag=False, flag_value=None
 )
+@click.option("--config_file", help="Path of the configuration file", default=None, is_flag=False, flag_value=None)
 def scan(
-    pyroscope_app_name,
-    docker_image_name,
-    pyroscope_url,
+    pyroscope_app_name=None,
+    docker_image_name=None,
+    pyroscope_url=None,
     falco_pod_name=None,
     falco_target_deployment_name=None,
     docker_file_folder_path=None,
     db_enabled=False,
     falco_enabled=False,
+    config_file=None,
 ):
+    config_data = {}
+    if config_file is not None:
+        with open(config_file, "r") as f:
+            config_data = yaml.safe_load(f)
+
+        # If command line options are not provided, take the options from the configuration file
+        if pyroscope_app_name is None:
+            pyroscope_app_name = config_data.get("pyroscope_app_name")
+        if docker_image_name is None:
+            docker_image_name = config_data.get("docker_image_name")
+        if pyroscope_url is None:
+            pyroscope_url = config_data.get("pyroscope_url")
+        if falco_pod_name is None:
+            falco_pod_name = config_data.get("falco_pod_name")
+        if falco_target_deployment_name is None:
+            falco_target_deployment_name = config_data.get("falco_target_deployment_name")
+        if docker_file_folder_path is None:
+            docker_file_folder_path = config_data.get("docker_file_folder_path")
+
+        # For flags, only set from config if not set from command line
+        if not db_enabled:
+            db_enabled = config_data.get("db_enabled", False)
+        if not falco_enabled:
+            falco_enabled = config_data.get("falco_enabled", False)
+
+        # Check mandatory fields
+        if pyroscope_app_name is None:
+            raise ValueError("pyroscope_app_name is required, either via command line or config file")
+
+        if docker_image_name is None:
+            raise ValueError("docker_image_name is required, either via command line or config file")
+
+        if pyroscope_url is None:
+            raise ValueError("pyroscope_url is required, either via command line or config file")
+        if falco_enabled and (falco_pod_name is None or falco_target_deployment_name is None):
+            raise ValueError(
+                "falco_pod_name and falco_target_deployment_name are required, either via command line or config file if falco is enabled"
+            )
+
     """This script will scan the docker image and find the unused packages"""
     appDetails = AppDetails(
         pyroscope_app_name=pyroscope_app_name, docker_image_name=docker_image_name, pyroscope_url=pyroscope_url
