@@ -9,6 +9,5 @@
 
 ## Reporting a Vulnerability
 
-Please create an issue and tag all the primary contributors.
-
+Please report security issues using our [Security Form](https://intelops.ai/opensource-security-reporting-form/)
 
