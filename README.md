@@ -8,7 +8,8 @@ CLI/CI Tool for Automating Vulnerability Management for Enhancing Software Suppl
 	- Trivy
 	- Grype
 	- Syft
-	- CycloneDX
+	- CycloneDX & SPDX
+ 	- openSSF Scorecard scode
 	- [Snyk](https://snyk.io/)
  	- [Tenable](https://www.tenable.com/products) 
 	- Pyroscope
@@ -53,7 +54,24 @@ CLI/CI Tool for Automating Vulnerability Management for Enhancing Software Suppl
 > - Integration with Qualys, Nessus, Rapid 7, DeepFactor, etc.
 > - Productivity and User Experience - Previous & Updated Vulnerability detail views, Display of asset selection rules to view vulnerability details per service/node/cluster/namespace/pod/etc. and also overall view, etc.
 > - Risk-based Posture Management - Risk Configuration + Risk Customizations, EPSS factor in risk calculation, etc.
-> - Manage Vulnerabilities and Assets - Filter vulnerabilities by asset & vulnerability tags, export vulnerability data in csv or directly generate graphs using clickhouse/cassandra as datasource, Linking of Teams to Apps/Environments/Platforms/Clusters/Vulnerabilities/etc., multi-selection for varieties of filters to visualize the data in different charts, etc. 
+> - Manage Vulnerabilities and Assets - Filter vulnerabilities by asset & vulnerability tags, export vulnerability data in csv or directly generate graphs using clickhouse/cassandra as datasource, Linking of Teams to Apps/Environments/Platforms/Clusters/Vulnerabilities/etc., multi-selection for varieties of filters to visualize the data in different charts, etc.
+> - Build features mentioned in these CycloneDX based reports :
+	- [CycloneDX BOM server](https://github.com/CycloneDX/cyclonedx-bom-repo-server)
+	, [CDXGen](https://github.com/CycloneDX/cdxgen)
+	, [CycloneDX Python lib for Programmatic purpose](https://github.com/CycloneDX/cyclonedx-python-lib)
+	, [CycloneDX Web Tool](https://github.com/CycloneDX/cyclonedx-web-tool)
+	, [SBOM-Utility API platform](https://github.com/cyclonedx/sbom-utility)
+	, [eBay SBOM scorecard](https://github.com/eBay/sbom-scorecard)
+	, [Agentless Vuln. Scanner - Vuls](https://vuls.io/)
+	, [Generate VEX (Vulnerability Exploitability Exchange) CycloneDX documents](https://github.com/madpah/vexy)
+	, [openSSF Scorecard API](https://api.securityscorecards.dev/#/)
+	, [same as Tally project](https://github.com/jetstack/tally) with openSSF scorecard
+	, [SBOM dependency graph diagram](https://github.com/anthonyharrison/sbom2dot) similar to call graph diagram
+	, [Transform SBOM contents into Markdown](https://github.com/anthonyharrison/sbom2doc)
+	, [Scan K8s with Syft - SBOM Operator](https://github.com/ckotzbauer/sbom-operator)
+	, [GitHub Action / Tekton CI steps to show differences in SBOMs](https://github.com/thepwagner/sbom-action)
+	, [SBOM publish, verify & share - this is perfect example on how we wanted to build certain feature](https://github.com/interlynk-io)
+	
 
 ### Usage
 
