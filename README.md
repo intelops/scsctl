@@ -101,7 +101,7 @@ Example:
 scsctl scan --pyroscope_app_name dagflow-api --docker_image_name dagflow-app-with-db-url:latest --pyroscope_url http://localhost:4040 --docker_file_folder_path /home/jegath/Documents/intelops/sps/dagflow/app/ --falco_pod_name falco-mvnmt --falco_target_deployment_name app --falco_enabled
 ```
 
-> There is also an option to pass a yaml as a config file
+> There is also an option to pass a yaml as a config file.
 
 ```shell
 scsctl scan --config_file ./test.yaml
