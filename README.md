@@ -1,12 +1,10 @@
 # scsctl
 
-
 > We are continuously adding the listed features
 
 CLI/CI Tool for Automating Vulnerability Management for Enhancing Software Supply Chain Security Measures.
 
 ### Features
-
 
 - Integration with other Tools & Platforms:
 	- Trivy
@@ -109,6 +107,17 @@ Before starting, make sure you have the following installed and configured:
 ### Commands
 
 scsctl has the following commands:
+
+- pyroscope_app_name (string) - Pyroscope app name
+- docker_image_name (string) - Docker image name
+- pyroscope_url (string) - Url for pyroscope
+- falco_pod_name (string) - Pod name of falco
+- falco_target_deployment_name (string) - Deployment name of falco
+- db_enabled (boolean) - To enable db saving
+- falco_enabled (boolean) (optional) - To get logs from falco
+- docker_file_folder_path (string) (optional) - Dockerfile folder path if you need to rebuild the image
+- config_file (optional) (YAML)
+
 > This command will scan the docker image and generate the reports
 
 ```shell
