@@ -48,6 +48,7 @@ batch_id = f"scsctl_{current_datetime}"
 )
 @click.option("--db_enabled", help="Enable db", default=False, is_flag=True, flag_value=True)
 @click.option("--falco_enabled", help="Enable falco", default=False, is_flag=True, flag_value=True)
+@click.option("--non_interactive", help="Run scsctl in non interactive mode", default= False, is_flag=True, flag_value=True)
 @click.option(
     "--docker_file_folder_path", help="Path of the docker file to rebuild", default=None, is_flag=False, flag_value=None
 )
@@ -62,6 +63,7 @@ def scan(
     db_enabled=False,
     falco_enabled=False,
     config_file=None,
+    non_interactive = False
 ):
     config_data = {}
     if config_file is not None:
@@ -159,23 +161,37 @@ def scan(
         choices.remove("Falco detected packages")
 
     if scan_status:
-        while True:
-            choice = questionary.select("Select an option", choices=choices, style=custom_style_fancy).ask()
-            if choice == "Exit":
-                break
-            if choice == "Sbom report":
-                print_sbom_report(sbom_report)
-            if choice == "Pyroscope detected packages":
-                print_pyroscope_packages(pyroscope_data)
-            if choice == "Falco detected packages":
-                print_falco_packages(falco_found_extra_packages)
-            if choice == "Final report":
-                click.echo("Vulnerable packages that can be uninstalled from the docker image are:")
-                click.echo(final_report)
-            if choice == "Rebuild the image":
-                if docker_file_folder_path == None:
-                    docker_file_folder_path = click.prompt("Enter docker file folder path", type=str)
-                modify_and_build_docker_image(docker_file_folder_path, pyroscope_found_extra_packages, batch_id)
+        if(non_interactive):
+            click.echo("Sbom report")
+            click.echo("===========")
+            print_sbom_report(sbom_report)
+            click.echo("Pyroscope detected packages")
+            click.echo("===========================")
+            print_pyroscope_packages(pyroscope_data)
+            click.echo("Falco detected packages")
+            click.echo("=======================")
+            print_falco_packages(falco_found_extra_packages)
+            click.echo("Final Report")
+            click.echo("=============")
+            click.echo(final_report)
+        else:
+            while True:
+                choice = questionary.select("Select an option", choices=choices, style=custom_style_fancy).ask()
+                if choice == "Exit":
+                    break
+                if choice == "Sbom report":
+                    print_sbom_report(sbom_report)
+                if choice == "Pyroscope detected packages":
+                    print_pyroscope_packages(pyroscope_data)
+                if choice == "Falco detected packages":
+                    print_falco_packages(falco_found_extra_packages)
+                if choice == "Final report":
+                    click.echo("Vulnerable packages that can be uninstalled from the docker image are:")
+                    click.echo(final_report)
+                if choice == "Rebuild the image":
+                    if docker_file_folder_path == None:
+                        docker_file_folder_path = click.prompt("Enter docker file folder path", type=str)
+                    modify_and_build_docker_image(docker_file_folder_path, pyroscope_found_extra_packages, batch_id)
 
 
 cli.add_command(scan)
