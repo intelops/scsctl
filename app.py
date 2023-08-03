@@ -168,9 +168,10 @@ def scan(
             click.echo("Pyroscope detected packages")
             click.echo("===========================")
             print_pyroscope_packages(pyroscope_data)
-            click.echo("Falco detected packages")
-            click.echo("=======================")
-            print_falco_packages(falco_found_extra_packages)
+            if falco_enabled:
+                click.echo("Falco detected packages")
+                click.echo("=======================")
+                print_falco_packages(falco_found_extra_packages)
             click.echo("Final Report")
             click.echo("=============")
             click.echo(final_report)
