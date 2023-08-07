@@ -24,7 +24,8 @@ CLI/CI Tool for Automating Vulnerability Management for Enhancing Software Suppl
  	- Buildah
   	- Podman
   	- Docker Build tool
-  	- Renovate 
+  	- Renovate
+  	- [Dependency-Track ](https://github.com/DependencyTrack/dependency-track)
 - Integration with DB(s):
   - ClickHouse
   - Cassandra
