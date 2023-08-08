@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   build:
@@ -32,3 +33,16 @@ jobs:
       run: |
         python -m build
         ls
+    - name: Install cosign
+      uses: sigstore/gh-action-sigstore-python@v0.2.0
+      with:
+        inputs: dist/scsctl-0.0.1-py3-none-any.whl
+    - name: Sign with sigstore using GitHub App credentials
+      run: |
+          sigstore sign dist/scsctl-0.0.1-py3-none-any.whl
+          
+    - name: Publish distribution 📦 to Test PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository-url: https://test.pypi.org/legacy/
