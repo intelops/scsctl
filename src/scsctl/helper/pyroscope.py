@@ -4,8 +4,8 @@ import json
 from tabulate import tabulate
 import questionary
 from datetime import datetime
-from helper.common import AppDetails
-from helper.clickhouse import connect_to_db
+from scsctl.helper.common import AppDetails
+from scsctl.helper.clickhouse import connect_to_db
 
 
 def get_pyroscope_data(app_details: AppDetails):
