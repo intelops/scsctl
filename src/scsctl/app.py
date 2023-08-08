@@ -1,20 +1,20 @@
 from datetime import datetime
 import click
 import questionary
-from helper.falco import (
+from scsctl.helper.falco import (
     parse_logs_and_get_package_paths,
     compare_and_find_extra_packages_using_falco,
     print_falco_packages,
     save_falco_data,
 )
-from helper.pyroscope import (
+from scsctl.helper.pyroscope import (
     get_pyroscope_data,
     print_pyroscope_packages,
     save_pyroscope_data,
     compare_and_find_pyroscope_extra_packages,
 )
-from helper.common import AppDetails, generate_final_report, modify_and_build_docker_image, custom_style_fancy
-from helper.trivy import get_sbom_report, print_sbom_report, save_sbom_data
+from scsctl.helper.common import AppDetails, generate_final_report, modify_and_build_docker_image, custom_style_fancy
+from scsctl.helper.trivy import get_sbom_report, print_sbom_report, save_sbom_data
 
 import yaml
 

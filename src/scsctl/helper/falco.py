@@ -4,7 +4,7 @@ import click
 import questionary
 from tabulate import tabulate
 from datetime import datetime
-from helper.clickhouse import connect_to_db
+from scsctl.helper.clickhouse import connect_to_db
 
 
 def read_logs_from_log(pod_name, namespace):

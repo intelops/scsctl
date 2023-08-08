@@ -2,8 +2,8 @@ import subprocess
 import click
 import json
 from tabulate import tabulate
-from helper.clickhouse import connect_to_db
-from helper.common import AppDetails
+from scsctl.helper.clickhouse import connect_to_db
+from scsctl.helper.common import AppDetails
 import questionary
 from datetime import datetime
 
