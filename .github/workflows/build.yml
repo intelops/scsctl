@@ -39,7 +39,7 @@ jobs:
         inputs: dist/scsctl-0.0.1-py3-none-any.whl
     - name: Sign with sigstore using GitHub App credentials
       run: |
-          sigstore sign dist/scsctl-0.0.1-py3-none-any.whl
+          sigstore sign --overwrite dist/scsctl-0.0.1-py3-none-any.whl
           
     - name: Publish distribution 📦 to Test PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
