@@ -34,7 +34,7 @@ jobs:
         python -m build
         ls
     - name: Install cosign
-      uses: sigstore/gh-action-sigstore-python@vv2.0.0
+      uses: sigstore/gh-action-sigstore-python@v2.0.0
       with:
         inputs: dist/scsctl-0.0.1-py3-none-any.whl
     - name: Sign with sigstore using GitHub App credentials
