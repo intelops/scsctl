@@ -40,9 +40,12 @@ jobs:
     - name: Sign with sigstore using GitHub App credentials
       run: |
           sigstore sign --overwrite dist/scsctl-0.0.1-py3-none-any.whl
-    - name: List the files
-      run: |
-        ls -l dist
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: |
+          dist
           
     # - name: Publish distribution 📦 to Test PyPI
     #   uses: pypa/gh-action-pypi-publish@release/v1
