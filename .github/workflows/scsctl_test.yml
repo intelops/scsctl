@@ -20,4 +20,4 @@ jobs:
 
     - name: run scsctl --help
       run: |
-        scsctl --help
+        scsctl scan --pyroscope_app_name pyroscope.server --docker_image_name pyroscope/pyroscope:latest --pyroscope_url https://d967-111-92-44-131.ngrok-free.app
