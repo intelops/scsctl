@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scsctl"
-version = "0.0.1"
+version = "0.0.2"
 authors = [{name="Jegath S", email="jegath@intelops.dev" }]
 description = "Tool for automating Vulnerability Risk Management and Software Supply Chain Security Measures"
 readme = "README.md"
