@@ -1,0 +1,23 @@
+name: scsctl_test
+on:
+  push:
+    branches: [ test ]
+jobs:
+  container-test-job:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Pull pyroscope/pyroscope:latest image 
+      run: docker pull pyroscope/pyroscope:latest
+
+    - name: Install a python cli tool from test pypi  and run it
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade build
+        python -m pip install --index-url https://test.pypi.org scsctl
+
+    - name: run scsctl --help
+      run: |
+        scsctl --help
