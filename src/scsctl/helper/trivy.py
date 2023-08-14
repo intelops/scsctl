@@ -45,7 +45,7 @@ def get_sbom_report(app_details: AppDetails):
         return "", False
 
 
-def print_sbom_report(sbom_report):
+def print_sbom_report(sbom_report,is_non_interactive=False):
     sbom_report = json.loads(sbom_report)
     sbom_report = sbom_report["Results"]
     sbom_report = [item["Vulnerabilities"] for item in sbom_report if item["Class"] != "lang-pkgs"][0]
@@ -71,7 +71,10 @@ def print_sbom_report(sbom_report):
 
     # Change width of the columns (First width is for the index column)
     width = [10, 20, 20, 20, 10, 10, 80]
-    # print(data)
+    
+    if is_non_interactive:
+        print(tabulate(data, headers=headers, tablefmt="grid",maxcolwidths=width, showindex=list(range(1, len(data) + 1))))
+        return
 
     while index < len(data):
         table = tabulate(

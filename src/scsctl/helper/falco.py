@@ -69,16 +69,22 @@ def compare_and_find_extra_packages_using_falco(falco_package_names, sbom_packag
     return extra_packages
 
 
-def print_falco_packages(falco_package_names):
+def print_falco_packages(falco_package_names,is_non_interactive=False):
     headers = ["Packages"]
     data = []
     for item in falco_package_names:
         data.append([item])
 
+    width = [100]
+
+    if is_non_interactive:
+        print(tabulate(data, headers=headers, tablefmt="grid",maxcolwidths=width, showindex=list(range(1, len(data) + 1))))
+        return
+
+
     chunk_size = 200
     index = 0
 
-    width = [100]
 
     while index < len(data):
         table = tabulate(
