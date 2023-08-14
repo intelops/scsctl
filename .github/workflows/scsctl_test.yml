@@ -1,7 +1,7 @@
 name: scsctl_test
 on:
   push:
-    branches: [ test ]
+    branches: [ test/scsctl_cicd_integration ]
 jobs:
   container-test-job:
     runs-on: ubuntu-latest
