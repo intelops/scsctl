@@ -1,4 +1,7 @@
 {
+    "python": {
+        "enabled": true
+      },    
     "fileMatch": [
       "(^|/)[\\w-]*requirements(-\\w+)?\\.(txt|pip)$"
     ]
