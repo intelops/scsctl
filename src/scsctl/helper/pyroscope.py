@@ -24,7 +24,7 @@ def get_pyroscope_data(app_details: AppDetails):
     return [], False
 
 
-def print_pyroscope_packages(pyroscope_package_names):
+def print_pyroscope_packages(pyroscope_package_names,is_non_interactive = False):
     if "total" in pyroscope_package_names:
         pyroscope_package_names.remove("total")
     if "other" in pyroscope_package_names:
@@ -33,11 +33,15 @@ def print_pyroscope_packages(pyroscope_package_names):
     data = []
     for item in pyroscope_package_names:
         data.append([item])
+    
+    width = [100]
+    if is_non_interactive:
+        print(tabulate(data, headers=headers, tablefmt="grid",maxcolwidths=width, showindex=list(range(1, len(data) + 1))))
+        return
 
     chunk_size = 200
     index = 0
 
-    width = [100]
 
     while index < len(data):
         table = tabulate(

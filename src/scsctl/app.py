@@ -164,14 +164,14 @@ def scan(
         if(non_interactive):
             click.echo("Sbom report")
             click.echo("===========")
-            print_sbom_report(sbom_report)
+            print_sbom_report(sbom_report = sbom_report,is_non_interactive = True)
             click.echo("Pyroscope detected packages")
             click.echo("===========================")
-            print_pyroscope_packages(pyroscope_data)
+            print_pyroscope_packages(pyroscope_package_names = pyroscope_data,is_non_interactive = True)
             if falco_enabled:
                 click.echo("Falco detected packages")
                 click.echo("=======================")
-                print_falco_packages(falco_found_extra_packages)
+                print_falco_packages(falco_package_names = falco_found_extra_packages,is_non_interactive = True)
             click.echo("Final Report")
             click.echo("=============")
             click.echo(final_report)
