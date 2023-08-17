@@ -2,9 +2,9 @@ name: Renovate
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "feat/renovate" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "feat/renovate" ]
   workflow_dispatch:
 
 jobs:
