@@ -2,9 +2,6 @@
     "python": {
         "enabled": true
     },
-    "fileMatch": [
-        "(^|/)[\\w-]*requirements(-\\w+)?\\.(txt|pip)$"
-    ],
     "packageRules": [
         {
             "matchBaseBranches": ["main"],
