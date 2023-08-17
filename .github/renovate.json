@@ -1,5 +1,13 @@
 {
-    "fileMatch": [
-      "(^|/)[\\w-]*requirements(-\\w+)?\\.(txt|pip)$"
+    "python": {
+        "enabled": true
+    },
+    "packageRules": [
+        {
+            "packagePatterns": ["requirements.txt"],
+            "matchBaseBranches": ["main"],
+            "matchManagers": ["pip_requirements"],
+            "separateMinorPatch": true
+          }
     ]
-  }
+}

@@ -2,9 +2,9 @@ name: Renovate
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "feat/renovate" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "feat/renovate" ]
   workflow_dispatch:
 
 jobs:
@@ -16,4 +16,8 @@ jobs:
       - name: Self-hosted Renovate
         uses: renovatebot/github-action@v39.0.1
         with:
+          configurationFile: .github/renovate.json
           token: ${{ secrets.RENOVATE_TOKEN }}
+        env:
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          RENOVATE_ONBOARDING: "false"
