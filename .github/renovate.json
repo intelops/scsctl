@@ -1,8 +1,15 @@
 {
     "python": {
         "enabled": true
-      },    
+    },
     "fileMatch": [
-      "(^|/)[\\w-]*requirements(-\\w+)?\\.(txt|pip)$"
+        "(^|/)[\\w-]*requirements(-\\w+)?\\.(txt|pip)$"
+    ],
+    "packageRules": [
+        {
+            "matchBaseBranches": ["main"],
+            "matchManagers": ["pip_requirements"],
+            "separateMinorPatch": true
+          }
     ]
-  }
+}
