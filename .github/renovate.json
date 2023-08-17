@@ -1,0 +1,5 @@
+{
+    "fileMatch": [
+      "(^|/)[\\w-]*requirements(-\\w+)?\\.(txt|pip)$"
+    ]
+  }

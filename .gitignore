@@ -5,4 +5,3 @@ dist
 *.egg-info
 __pycache__
 test.py
-*.json
