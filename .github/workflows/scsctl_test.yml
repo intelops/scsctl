@@ -2,6 +2,7 @@ name: scsctl_test
 on:
   push:
     branches: [ test/scsctl_cicd_integration ]
+  workflow_dispatch:
 jobs:
   container-test-job:
     runs-on: ubuntu-latest
@@ -17,7 +18,10 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade build
         python -m pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple scsctl
-
+    - name: Run falco on k3s
+      uses: debianmaster/actions-k3s@master
+      - run: |
+        kubectl get nodes
     - name: run scsctl --help
       run: |
         scsctl scan --pyroscope_app_name pyroscope.server --docker_image_name pyroscope/pyroscope:latest --pyroscope_url https://369d-111-92-44-131.ngrok-free.app --non_interactive
