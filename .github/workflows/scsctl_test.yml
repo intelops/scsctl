@@ -3,7 +3,7 @@ on:
   push:
     branches: [ test/scsctl_cicd_integration ]
   workflow_dispatch:
-  
+
 jobs:
   container-test-job:
     runs-on: ubuntu-latest
@@ -42,17 +42,20 @@ jobs:
         helm repo add pyroscope-io https://pyroscope-io.github.io/helm-chart
         helm install pyroscope pyroscope-io/pyroscope
 
-        export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=pyroscope,app.kubernetes.io/instance=pyroscope" -o jsonpath="{.items[0].metadata.name}")
-        export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+        # export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=pyroscope,app.kubernetes.io/instance=pyroscope" -o jsonpath="{.items[0].metadata.name}")
+        # export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
         
-        sleep 30
+        # sleep 30
 
-        kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
+        # kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
 
+        # kubectl get pods
+
+
+        # curl http://localhost:4040
+    - name: List pods
+      run: |
         kubectl get pods
-
-
-        curl http://localhost:4040
 
     # - name: Install a python cli tool from test pypi  and run it
     #   run: |
