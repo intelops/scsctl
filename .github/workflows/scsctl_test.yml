@@ -55,7 +55,11 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade build
         python -m pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple scsctl
-    - name: run scsctl --help
+    - name: Run clickhouse
+      run: |
+        docker run -d --network host --name some-clickhouse-server --ulimit nofile=262144:262144 clickhouse/clickhouse-server
+        sleep 5
+    - name: run scsctl
       run: |
         export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=pyroscope,app.kubernetes.io/instance=pyroscope" -o jsonpath="{.items[0].metadata.name}")
-        scsctl scan --pyroscope_app_name pyroscope.server --docker_image_name pyroscope/pyroscope:latest --pyroscope_url http://localhost:4040 --falco_pod_name $POD_NAME --falco_target_deployment_name pyroscope --falco_enabled --non_interactive 
+        scsctl scan --pyroscope_app_name pyroscope.server --docker_image_name pyroscope/pyroscope:latest --pyroscope_url http://localhost:4040 --falco_pod_name $POD_NAME --falco_target_deployment_name pyroscope --db_enabled --falco_enabled --non_interactive 
