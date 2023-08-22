@@ -24,7 +24,9 @@ jobs:
     - name: Install k3s and run Helm chart
       run: |
         curl -sfL https://get.k3s.io | sh -
-        sleep 60
+        sleep 30
+        export KUBECONFIG="/etc/rancher/k3s/k3s.yaml"
+
         kubectl get pods
 
     - name: run scsctl --help
