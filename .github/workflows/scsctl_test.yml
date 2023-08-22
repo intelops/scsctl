@@ -24,7 +24,7 @@ jobs:
     - name: Install k3s and run Helm chart
       run: |
         curl -sfL https://get.k3s.io | sh -
-        sleep 30
+        sleep 60
         kubectl get pods
 
     - name: run scsctl --help
