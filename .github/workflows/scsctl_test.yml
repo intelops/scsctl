@@ -21,13 +21,12 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade build
         python -m pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple scsctl
-    - name: Install k3s and run Helm chart
-      run: |
-        curl -sfL https://get.k3s.io | sh -
-        sleep 30
-        export KUBECONFIG="/etc/rancher/k3s/k3s.yaml"
-
-        kubectl get pods
+    - uses: debianmaster/actions-k3s@master
+      id: k3s
+      with:
+        version: 'v1.21.2-k3s1'
+    - run: |
+        kubectl get nodes
 
     - name: run scsctl --help
       run: |
