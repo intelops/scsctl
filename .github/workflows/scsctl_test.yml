@@ -34,7 +34,16 @@ jobs:
         kubectl get pods --all-namespaces
 
         helm version
-        helm list
+
+        helm repo add pyroscope-io https://pyroscope-io.github.io/helm-chart
+        helm install pyroscope pyroscope-io/pyroscope
+        kubectl get pods
+
+        sleep 10
+
+        curl http://localhost:4040
+
+        # helm install falco -f custom-rules.yaml --set "falco.rules_file={/etc/falco/falco_rules.local.yaml,/etc/falco/rules.d}" --set falcoctl.artifact.install.enabled=false --set falcoctl.artifact.follow.enabled=false --set falco.json_output=true --set falco.file_output.enabled=true falcosecurity/falco
 
 
     # - name: Install a python cli tool from test pypi  and run it
