@@ -47,6 +47,8 @@ jobs:
 
         kubectl get pods
 
+        sleep 30
+
         curl http://localhost:8080
 
     # - name: Install a python cli tool from test pypi  and run it
