@@ -1,0 +1,13 @@
+customRules:
+  falco_rules.yaml: |-
+    - rule: File Opened in Container
+      desc: Detect any file opened in container
+      condition: open_file_in_container
+      output: file - %fd.name type - %evt.type Deplyment name - %k8s.deployment.name time - %evt.time.iso8601
+      priority: INFO
+      tags:
+        - scsctl
+    - macro: open_file_in_container
+      condition: >
+        k8s.deployment.name startswith "pyroscope" and
+        evt.type = "openat"

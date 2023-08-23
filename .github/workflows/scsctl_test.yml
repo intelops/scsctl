@@ -1,0 +1,59 @@
+name: scsctl_test
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  container-test-job:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Pull pyroscope/pyroscope:latest image 
+      run: docker pull pyroscope/pyroscope:latest
+
+    - name: Run pyroscope 
+      run: docker run -d -it -p 4040:4040 pyroscope/pyroscope:latest server
+
+    - name: Start a local k8s cluster
+      uses: jupyterhub/action-k3s-helm@v3
+      with:
+        k3s-channel: latest
+
+    - name: Verify function of k8s, kubectl, and helm
+      run: |
+        echo "kubeconfig: $KUBECONFIG"
+        kubectl version
+        kubectl get pods --all-namespaces
+
+        helm version
+
+        # helm install falco -f custom-rules.yaml --set "falco.rules_file={/etc/falco/falco_rules.local.yaml,/etc/falco/rules.d}" --set falcoctl.artifact.install.enabled=false --set falcoctl.artifact.follow.enabled=false --set falco.json_output=true --set falco.file_output.enabled=true falcosecurity/falco
+    - name: Run falco in k3s
+      run: |
+        helm repo add falcosecurity https://falcosecurity.github.io/charts
+        helm install falco -f custom-rules.yaml --set "falco.rules_file={/etc/falco/falco_rules.local.yaml,/etc/falco/rules.d}" --set falcoctl.artifact.install.enabled=false --set falcoctl.artifact.follow.enabled=false --set falco.json_output=true --set falco.file_output.enabled=true falcosecurity/falco
+        sleep 30
+    - name: Run pyroscope in k3s
+      run: |
+        helm repo add pyroscope-io https://pyroscope-io.github.io/helm-chart
+        helm install pyroscope pyroscope-io/pyroscope
+        sleep 30
+    - name: List pods
+      run: |
+        kubectl get pods
+    - name: Install a python cli tool from test pypi  and run it
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade build
+        python -m pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple scsctl
+    - name: Run clickhouse
+      run: |
+        docker run -d --network host --name some-clickhouse-server --ulimit nofile=262144:262144 clickhouse/clickhouse-server
+        sleep 5
+    - name: run scsctl
+      run: |
+        export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=pyroscope,app.kubernetes.io/instance=pyroscope" -o jsonpath="{.items[0].metadata.name}")
+        scsctl scan --pyroscope_app_name pyroscope.server --docker_image_name pyroscope/pyroscope:latest --pyroscope_url http://localhost:4040 --falco_pod_name $POD_NAME --falco_target_deployment_name pyroscope --db_enabled --falco_enabled --non_interactive 

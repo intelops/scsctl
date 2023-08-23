@@ -149,3 +149,38 @@ db_enabled: true
 falco_enabled: true
 docker_file_folder_path: /home/jegath/Documents/intelops/sps/dagflow/app/
 ```
+
+### Running the tool in ci/cd environment
+
+To run scsctl in ci/cd environment,
+1. Install scsctl from pypi
+2. Run the tool
+
+Example
+
+
+```yaml
+name: scsctl_test
+on:
+  push:
+    branches: [ main ]
+jobs:
+  container-test-job:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Pull pyroscope/pyroscope:latest image 
+      run: docker pull pyroscope/pyroscope:latest
+
+    - name: Install a python cli tool from test pypi  and run it
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade build
+        python -m pip install scsctl
+
+    - name: run scsctl tool
+      run: |
+        scsctl scan --pyroscope_app_name pyroscope.server --docker_image_name pyroscope/pyroscope:latest --pyroscope_url https://369d-111-92-44-131.ngrok-free.app --non_interactive
+```
