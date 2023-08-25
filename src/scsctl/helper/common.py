@@ -66,7 +66,7 @@ def modify_and_build_docker_image(folder_path: str, package_nammes: list, bacth_
     return True
 
 
-def generate_final_report(sbom_package_names, pyroscope_package_names=[], falco_found_extra_packages=[]):
+def generate_final_report(sbom_package_names, pyroscope_package_names=[], falco_found_extra_packages=[], is_api=False):
     sbom_package_names = json.loads(sbom_package_names)
     sbom_package_names = sbom_package_names["Results"]
     sbom_packages = [item["Vulnerabilities"] for item in sbom_package_names if item["Class"] != "lang-pkgs"][0]
@@ -93,6 +93,10 @@ def generate_final_report(sbom_package_names, pyroscope_package_names=[], falco_
     headers = ["Package Names", "Vulnerability IDs", "Severities"]
     data = []
     for item in grouped_packages:
+        if(is_api):
+            data.append({"package_names": item, "vulnerability_ids": grouped_packages[item]["VulnerabilityID"], "severities": [f"{k} - {v}" for k, v in grouped_packages[item]["Severity"].items()]})
+            continue
+        
         severity_joined = "\n".join(f"{k} - {v}" for k, v in grouped_packages[item]["Severity"].items())
         data.append(
             [
@@ -101,6 +105,10 @@ def generate_final_report(sbom_package_names, pyroscope_package_names=[], falco_
                 severity_joined,
             ]
         )
+
+    
+    if(is_api):
+        return data
 
     table = tabulate(data, headers=headers, tablefmt="grid")
     return table
