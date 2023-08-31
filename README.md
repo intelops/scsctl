@@ -26,6 +26,7 @@ CLI/CI Tool for Automating Vulnerability Management for Enhancing Software Suppl
   	- Docker Build tool
   	- Renovate
   	- [Dependency-Track ](https://github.com/DependencyTrack/dependency-track)
+  	- [openVEX](https://github.com/openvex/spec) 
 - Integration with DB(s):
   - ClickHouse
   - Cassandra
