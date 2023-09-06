@@ -1,4 +1,4 @@
-FROM python:3.10-slim as build
+FROM python:3.11-slim as build
 
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends build-essential gcc 
@@ -13,7 +13,7 @@ copy requirements.txt .
 RUN pip install -r requirements.txt
 
 # FROM python:3.12.0b3-slim@sha256:8e3ef64883278384c49293caf631d614b4bfdac7bb494d44e17cf2d711ce2652
-FROM python:3.10-slim@sha256:2bac43769ace90ebd3ad83e5392295e25dfc58e58543d3ab326c3330b505283d
+FROM python:3.11-slim@sha256:c4992301d47a4f1d3e73c034494c080132f9a4090703babfcfa3317f7ba54461
 
 RUN groupadd -g 999 python && \
     useradd -r -u 999 -g python python
