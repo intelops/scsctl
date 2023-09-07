@@ -19,6 +19,9 @@ from scsctl.helper.falco import (
 )
 
 from datetime import datetime
+import subprocess
+
+from scsctl.helper.renovate import (check_if_node_and_npm_is_installed,check_if_renovate_is_installed_globally,run_renovate_on_a_repository)
 
 class Config(BaseModel):
     pyroscope_app_name: str
@@ -30,6 +33,10 @@ class Config(BaseModel):
     db_enabled: bool = False
     falco_enabled: bool = False
 
+class RenovateConfig(BaseModel):
+    token: str
+    repo_name: str
+
 app = FastAPI()
 
 
@@ -37,8 +44,31 @@ app = FastAPI()
 async def root():
     return {"message": "Hello World"}
 
+@app.post("/renovate")
+async def renovate(renovateConfig: RenovateConfig):
+    if(check_if_node_and_npm_is_installed()):
+        if(check_if_renovate_is_installed_globally()):
+            renovate_process = run_renovate_on_a_repository(token=renovateConfig.token,repo_name=renovateConfig.repo_name)
+            if renovate_process.returncode == 0:
+                print("Renovate bot ran successfully")
+                return True
+            else:
+                print("Error running renovate bot")
+                return False
+        else:
+            return False
+    else:
+        return False
+    
+
+    
+
 @app.post("/scan")
 async def scan_api(config: Config):
+    pyroscope_found_extra_packages = []
+    falco_found_extra_packages = []
+    final_report = []
+    sbom_report = []
     current_datetime = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     batch_id = f"scsctl_{current_datetime}"
     falco_found_extra_packages = []
@@ -83,6 +113,22 @@ async def scan_api(config: Config):
     else:
         scan_status = False
         print("\nError fetching data from sbom_report... Exiting")
+
+    renovate_status = "Error"
+    if(config.renovate_enabled):
+        if(check_if_node_and_npm_is_installed()):
+            if(check_if_renovate_is_installed_globally()):
+                renovate_process = run_renovate_on_a_repository(token=config.renovate_repo_token,repo_name=config.renovate_repo_name)
+                if renovate_process.returncode == 0:
+                    renovate_status = "Renovate bot ran successfully"
+                else:
+                    renovate_status = "Error running renovate bot"
+            else:
+                renovate_status = "Renovate bot not installed, please install using `npm install -g renovate`"
+        else:
+            renovate_status = "Node or npm not installed, please install them to use scsctl with renovate"
+    else:
+        renovate_status = "Renovate not enabled"
     return {
         "scan_status": scan_status,
         "sbom_report": sbom_report,
@@ -90,6 +136,7 @@ async def scan_api(config: Config):
         "pyroscope_found_extra_packages": pyroscope_found_extra_packages,
         "falco_found_extra_packages": falco_found_extra_packages,
         "final_report": final_report,
+        "renovate_status" : renovate_status
     }
 
 if __name__ == "__main__":
