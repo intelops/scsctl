@@ -19,7 +19,6 @@ from scsctl.helper.falco import (
 )
 
 from datetime import datetime
-import subprocess
 
 from scsctl.helper.renovate import (check_if_node_and_npm_is_installed,check_if_renovate_is_installed_globally,run_renovate_on_a_repository)
 
@@ -140,4 +139,4 @@ async def scan_api(config: Config):
     }
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", port=5000, log_level="info", reload=True)
+    uvicorn.run("server:app", host="0.0.0.0",port=5000, log_level="info", reload=True)
