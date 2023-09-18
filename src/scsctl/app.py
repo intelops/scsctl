@@ -15,6 +15,7 @@ from scsctl.helper.pyroscope import (
 )
 from scsctl.helper.common import AppDetails, generate_final_report, modify_and_build_docker_image, custom_style_fancy
 from scsctl.helper.trivy import get_sbom_report, print_sbom_report, save_sbom_data
+from scsctl.helper.renovate import (check_if_node_and_npm_is_installed,check_if_renovate_is_installed_globally,run_renovate_on_a_repository)
 
 import yaml
 
@@ -48,11 +49,15 @@ batch_id = f"scsctl_{current_datetime}"
 )
 @click.option("--db_enabled", help="Enable db", default=False, is_flag=True, flag_value=True)
 @click.option("--falco_enabled", help="Enable falco", default=False, is_flag=True, flag_value=True)
+@click.option("--renovate_enabled", help="Enable renovate", default=False, is_flag=True, flag_value=True)
+@click.option("--renovate_repo_token", help="Repo token for renovate", default=None, is_flag=False, flag_value=None)
+@click.option("--renovate_repo_name", help="Repo name for renovate", default=None, is_flag=False, flag_value=None)
 @click.option("--non_interactive", help="Run scsctl in non interactive mode", default= False, is_flag=True, flag_value=True)
 @click.option(
     "--docker_file_folder_path", help="Path of the docker file to rebuild", default=None, is_flag=False, flag_value=None
 )
 @click.option("--config_file", help="Path of the configuration file", default=None, is_flag=False, flag_value=None)
+
 def scan(
     pyroscope_app_name=None,
     docker_image_name=None,
@@ -63,7 +68,10 @@ def scan(
     db_enabled=False,
     falco_enabled=False,
     config_file=None,
-    non_interactive = False
+    non_interactive = False,
+    renovate_enabled = False,
+    renovate_repo_token = None,
+    renovate_repo_name = None
 ):
     config_data = {}
     if config_file is not None:
@@ -89,6 +97,8 @@ def scan(
             db_enabled = config_data.get("db_enabled", False)
         if not falco_enabled:
             falco_enabled = config_data.get("falco_enabled", False)
+        if not renovate_enabled:
+            renovate_enabled = config_data.get("renovate_enabled", False)
 
         # Check mandatory fields
         if pyroscope_app_name is None:
@@ -103,6 +113,8 @@ def scan(
             raise ValueError(
                 "falco_pod_name and falco_target_deployment_name are required, either via command line or config file if falco is enabled"
             )
+        if(renovate_enabled and (renovate_repo_token is None or renovate_repo_name is None)):
+            raise ValueError("renovate_repo_token and renovate_repo_name are required, either via command line or config file if renovate is enabled")
 
     """This script will scan the docker image and find the unused packages"""
     appDetails = AppDetails(
@@ -147,6 +159,22 @@ def scan(
     else:
         scan_status = False
         click.echo("\nError fetching data from sbom_report... Exiting")
+
+    if(renovate_enabled):
+        if(check_if_node_and_npm_is_installed()):
+            if(check_if_renovate_is_installed_globally()):
+                renovate_process = run_renovate_on_a_repository(token=renovate_repo_token,repo_name=renovate_repo_name)
+                if renovate_process.returncode == 0:
+                    click.echo("Renovate bot ran successfully")
+                    return True
+                else:
+                    click.echo("Error running renovate bot")
+                    return False
+            else:
+                return False
+        else:
+            return False
+        
 
     choices = [
         "Sbom report",

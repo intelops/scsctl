@@ -5,10 +5,23 @@ RUN apt-get install -y --no-install-recommends build-essential gcc
 
 WORKDIR /usr/app
 
-RUN python -m venv /usr/app/venv
-ENV PATH="/usr/app/venv/bin:$PATH"
+#install node and npm
+RUN apt-get update -y
+RUN apt-get install -y ca-certificates curl gnupg
+RUN mkdir -p /etc/apt/keyrings
+RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+RUN apt-get update -y
+RUN apt-get install nodejs -y
 
-copy requirements.txt .
+RUN npm install -g renovate -y
+
+ENV VIRTUAL_ENV=/usr/app/venv
+
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
@@ -23,9 +36,24 @@ WORKDIR /usr/app
 COPY --chown=python:python --from=build /usr/app/venv ./venv
 COPY --chown=python:python . .
 
+
 USER 999
 
 ENV PATH="/usr/app/venv/bin:$PATH"
 
-CMD ["bash"]
+RUN pip install build
 
+#Build the app
+RUN python -m build
+
+
+#Find the wheel file name and install the wheel
+RUN pip install $(find dist -name "*.whl")
+
+EXPOSE 5000
+
+RUN chmod 755 ./run.sh
+
+ENTRYPOINT ["./run.sh"]
+
+# CMD ["python", "./src/scsctl/server.py"]
