@@ -1,0 +1,31 @@
+# Create a manifest for scsctl with a command to run the container
+apiVersion: v1
+kind: Pod
+metadata:
+  name: scsctl-server
+  labels:
+    app: scsctl-server
+spec:
+  containers:
+  - name: scsctl-server
+    image: ghcr.io/jegathintelops/scsctl:latest
+    imagePullPolicy: Always
+    args: ["server"]
+    ports:
+     - containerPort: 5000
+  restartPolicy: Never
+
+# Create a service to expose the scsctl container
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scsctl-loadbalancer
+spec:
+  selector:
+    app: scsctl-server
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: LoadBalancer

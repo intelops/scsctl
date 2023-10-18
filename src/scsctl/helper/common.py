@@ -35,6 +35,37 @@ class AppDetails:
     pyroscope_app_name: str
     pyroscope_url: str
 
+def modify_and_build_docker_images(file_paths: list, package_names: list, batch_id: str):
+    counter = 0
+    for file_path in file_paths:
+        if os.path.exists("./temp"):
+            shutil.rmtree("./temp/")
+        #create folder
+        os.makedirs("./temp")
+        shutil.copyfile(file_path, "./temp/Dockerfile")
+
+        # Create a new file which contains all the packages names to uninstall
+        with open("./temp/packages.txt", "w") as f:
+            f.write("\n".join(package_names))
+        # Add the uninstall commands at the end of the file
+        with open("./temp/Dockerfile", "a") as f:
+            f.write("\nCOPY packages.txt /tmp/packages.txt")
+            f.write(
+                '\nRUN while read -r package; do \\\n   if dpkg-query -W --showformat=\'${Essential}\' "$package" | grep -q \'^no$\'; then \\\n   apt-get remove -y "$package"; \\\n    else \\\n   echo "Skipping essential package: $package"; \\\n   fi; \\\ndone < /tmp/packages.txt'
+            )
+
+        # Build the docker image with the modified Dockerfile and tag it with the batch id
+        click.echo("Building the docker image...")
+        try:
+            subprocess.check_output(["docker", "build", "-t", f"{batch_id}_{counter}", "./temp/"])
+        except subprocess.CalledProcessError as e:
+            click.echo(f"Error building the docker image: {e}")
+            return False
+
+        # Remove the temp folder
+        if os.path.exists("./temp"):
+            shutil.rmtree("./temp/")
+        counter += 1
 
 def modify_and_build_docker_image(folder_path: str, package_nammes: list, bacth_id: str):
     # Make a copy of folder in a ./temp folder, create folder if it doesn't exist
