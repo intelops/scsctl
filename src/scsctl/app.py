@@ -13,7 +13,7 @@ from scsctl.helper.pyroscope import (
     save_pyroscope_data,
     compare_and_find_pyroscope_extra_packages,
 )
-from scsctl.helper.common import AppDetails, generate_final_report, modify_and_build_docker_image, custom_style_fancy
+from scsctl.helper.common import AppDetails, generate_final_report, modify_and_build_docker_image,modify_and_build_docker_images, custom_style_fancy
 from scsctl.helper.trivy import get_sbom_report, print_sbom_report, save_sbom_data
 from scsctl.helper.renovate import (check_if_node_and_npm_is_installed,check_if_renovate_is_installed_globally,run_renovate_on_a_repository)
 
@@ -54,7 +54,7 @@ batch_id = f"scsctl_{current_datetime}"
 @click.option("--renovate_repo_name", help="Repo name for renovate", default=None, is_flag=False, flag_value=None)
 @click.option("--non_interactive", help="Run scsctl in non interactive mode", default= False, is_flag=True, flag_value=True)
 @click.option(
-    "--docker_file_folder_path", help="Path of the docker file to rebuild", default=None, is_flag=False, flag_value=None
+    "--docker_file_folder_path", help="Path of the docker file to rebuild", default=None, is_flag=False, flag_value=None, multiple=True
 )
 @click.option("--config_file", help="Path of the configuration file", default=None, is_flag=False, flag_value=None)
 
@@ -220,7 +220,8 @@ def scan(
                 if choice == "Rebuild the image":
                     if docker_file_folder_path == None:
                         docker_file_folder_path = click.prompt("Enter docker file folder path", type=str)
-                    modify_and_build_docker_image(docker_file_folder_path, pyroscope_found_extra_packages, batch_id)
+                    # modify_and_build_docker_image(docker_file_folder_path, pyroscope_found_extra_packages, batch_id)
+                    modify_and_build_docker_images(file_paths=docker_file_folder_path,package_names=pyroscope_found_extra_packages,batch_id=batch_id)
 
 
 cli.add_command(scan)

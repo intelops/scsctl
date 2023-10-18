@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: scsctl-cronworkflow
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: "Replace"
+  startingDeadlineSeconds: 0
+  workflowSpec:
+    entrypoint: scsctl-server-test
+    templates:
+    - name: scsctl-server-test
+      container:
+        image: ghcr.io/jegathintelops/scsctl:latest
+
