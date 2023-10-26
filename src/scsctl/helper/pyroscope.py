@@ -84,9 +84,9 @@ def compare_and_find_pyroscope_extra_packages(pyroscope_package_names, sbom_pack
     return extra_packages
 
 
-def save_pyroscope_data(pyroscope_data, batch_id):
+def save_pyroscope_data(pyroscope_data, batch_id,vault_enabled=False, creds = {}):
     database_name = "scsctl"
-    cursor = connect_to_db(database_name=database_name)
+    cursor = connect_to_db(database_name=database_name, vault_enabled=vault_enabled, creds=creds)
     if cursor:
         table_name = "pyroscope_report"
 

@@ -94,9 +94,9 @@ def print_sbom_report(sbom_report,is_non_interactive=False):
         index += chunk_size
 
 
-def save_sbom_data(sbom_data, batch_id):
+def save_sbom_data(sbom_data, batch_id,vault_enabled=False, creds = {}):
     database_name = "scsctl"
-    cursor = connect_to_db(database_name=database_name)
+    cursor = connect_to_db(database_name=database_name, vault_enabled=vault_enabled, creds=creds)
     if cursor:
         table_name = "sbom_report"
 

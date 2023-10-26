@@ -152,7 +152,6 @@ docker_file_folder_path: /home/jegath/Documents/intelops/sps/dagflow/app/
 ```
 
 ### Running the tool in ci/cd environment
-
 To run scsctl in ci/cd environment,
 1. Install scsctl from pypi
 2. Run the tool
@@ -185,3 +184,28 @@ jobs:
       run: |
         scsctl scan --pyroscope_app_name pyroscope.server --docker_image_name pyroscope/pyroscope:latest --pyroscope_url https://369d-111-92-44-131.ngrok-free.app --non_interactive
 ```
+
+### Work Status
+
+Tools & Platforms | Status
+--------- | -----------
+Trivy | `Done`
+Pyroscope | `Done`
+Falco Security | `Done`
+Docker Build tool | `Done`
+Renovate | `Done`
+Grype | `Not yet started`
+Syft | `Not yet started`
+CycloneDX & SPDX | `Not yet started`
+openSSF Scorecard scode | `Not yet started`
+[Snyk](https://snyk.io/) | `Not yet started`
+[Tenable](https://www.tenable.com/products)  | `Not yet started`
+Parca | `Not yet started`
+KubViz | `Not yet started`
+Dive | `Not yet started`
+Skopeo | `Not yet started`
+SlimToolKit | `Not yet started`
+Buildah | `Not yet started`
+Podman | `Not yet started`
+[Dependency-Track ](https://github.com/DependencyTrack/dependency-track) | `Not yet started`
+[openVEX](https://github.com/openvex/spec)  | `Not yet started`

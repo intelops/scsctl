@@ -48,6 +48,10 @@ batch_id = f"scsctl_{current_datetime}"
     flag_value=None,
 )
 @click.option("--db_enabled", help="Enable db", default=False, is_flag=True, flag_value=True)
+@click.option("--db_hashicorp_vault_enabled", help="Read db creds from hashicorp vault", default=False, is_flag=True, flag_value=True)
+@click.option("--db_hashicorp_vault_url", help="Url of the hashicorp vault", default=None, is_flag=False, flag_value=None)
+@click.option("--db_hashicorp_vault_token", help="Token of the hashicorp vault", default=None, is_flag=False, flag_value=None)
+@click.option("--db_hashicorp_vault_path", help="Path of the hashicorp vault", default=None, is_flag=False, flag_value=None)
 @click.option("--falco_enabled", help="Enable falco", default=False, is_flag=True, flag_value=True)
 @click.option("--renovate_enabled", help="Enable renovate", default=False, is_flag=True, flag_value=True)
 @click.option("--renovate_repo_token", help="Repo token for renovate", default=None, is_flag=False, flag_value=None)
@@ -71,7 +75,11 @@ def scan(
     non_interactive = False,
     renovate_enabled = False,
     renovate_repo_token = None,
-    renovate_repo_name = None
+    renovate_repo_name = None,
+    db_hashicorp_vault_enabled=False,
+    db_hashicorp_vault_url=None,
+    db_hashicorp_vault_token=None,
+    db_hashicorp_vault_path=None
 ):
     config_data = {}
     if config_file is not None:
@@ -91,6 +99,12 @@ def scan(
             falco_target_deployment_name = config_data.get("falco_target_deployment_name")
         if docker_file_folder_path is None:
             docker_file_folder_path = config_data.get("docker_file_folder_path")
+        if db_hashicorp_vault_url is None:
+            db_hashicorp_vault_url = config_data.get("db_hashicorp_vault_url")
+        if db_hashicorp_vault_token is None:
+            db_hashicorp_vault_token = config_data.get("db_hashicorp_vault_token")
+        if db_hashicorp_vault_path is None:
+            db_hashicorp_vault_path = config_data.get("db_hashicorp_vault_path")
 
         # For flags, only set from config if not set from command line
         if not db_enabled:
@@ -99,6 +113,8 @@ def scan(
             falco_enabled = config_data.get("falco_enabled", False)
         if not renovate_enabled:
             renovate_enabled = config_data.get("renovate_enabled", False)
+        if not db_hashicorp_vault_enabled:
+            db_hashicorp_vault_enabled = config_data.get("db_hashicorp_vault_enabled", False)
 
         # Check mandatory fields
         if pyroscope_app_name is None:
@@ -148,10 +164,13 @@ def scan(
                     sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages
                 )
             if db_enabled:
-                save_sbom_data(sbom_data=sbom_report, batch_id=batch_id)
-                save_pyroscope_data(pyroscope_data=pyroscope_data, batch_id=batch_id)
+                if(db_hashicorp_vault_enabled and (db_hashicorp_vault_url == "" or db_hashicorp_vault_token == "" or db_hashicorp_vault_path == "")):
+                    click.echo("Please provide db_hashicorp_vault_url, db_hashicorp_vault_token and db_hashicorp_vault_path to save data to db")
+                    return
+                save_sbom_data(sbom_data=sbom_report, batch_id=batch_id, vault_enabled=db_hashicorp_vault_enabled, creds={"url":db_hashicorp_vault_url,"token":db_hashicorp_vault_token,"path":db_hashicorp_vault_path})
+                save_pyroscope_data(pyroscope_data=pyroscope_data, batch_id=batch_id, vault_enabled=db_hashicorp_vault_enabled, creds={"url":db_hashicorp_vault_url,"token":db_hashicorp_vault_token,"path":db_hashicorp_vault_path})
                 if falco_enabled:
-                    save_falco_data(falco_data=falco_found_extra_packages, batch_id=batch_id)
+                    save_falco_data(falco_data=falco_found_extra_packages, batch_id=batch_id, vault_enabled=db_hashicorp_vault_enabled, creds={"url":db_hashicorp_vault_url,"token":db_hashicorp_vault_token,"path":db_hashicorp_vault_path})
 
         else:
             scan_status = False

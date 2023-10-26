@@ -22,6 +22,8 @@ from datetime import datetime
 
 from scsctl.helper.renovate import (check_if_node_and_npm_is_installed,check_if_renovate_is_installed_globally,run_renovate_on_a_repository)
 
+from helper.db_credentials import get_credentials_from_hashicorp_vault
+
 class Config(BaseModel):
     pyroscope_app_name: str
     docker_image_name: str
@@ -36,8 +38,16 @@ class RenovateConfig(BaseModel):
     token: str
     repo_name: str
 
+class TestConfig(BaseModel):
+    url: str
+    token: str
+    path: str
+
 app = FastAPI()
 
+@app.post("/test")
+async def test( config: TestConfig ):
+    return get_credentials_from_hashicorp_vault( url=config.url, token=config.token, path=config.path)
 
 @app.get("/")
 async def root():

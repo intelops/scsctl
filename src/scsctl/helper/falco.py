@@ -104,9 +104,9 @@ def print_falco_packages(falco_package_names,is_non_interactive=False):
         index += chunk_size
 
 
-def save_falco_data(falco_data, batch_id):
+def save_falco_data(falco_data, batch_id,vault_enabled=False, creds = {}):
     database_name = "scsctl"
-    cursor = connect_to_db(database_name=database_name)
+    cursor = connect_to_db(database_name=database_name, vault_enabled=vault_enabled, creds=creds)
     if cursor:
         table_name = "falco_report"
 
