@@ -1,0 +1,60 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: scsctl build
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade build
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Build with hachling
+      run: |
+        python -m build
+        ls
+    - name: Install cosign
+      uses: sigstore/gh-action-sigstore-python@v2.0.0
+      with:
+        inputs: dist/scsctl-0.0.4-py3-none-any.whl
+    - name: Sign with sigstore using GitHub App credentials
+      run: |
+          sigstore sign --overwrite dist/scsctl-0.0.4-py3-none-any.whl
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: |
+          dist
+    - name: Copy dist/scsctl-0.0.4.tar.gz dist/scsctl-0.0.4-py3-none-any.whl to release directory
+      run: |
+        mkdir -p release
+        cp dist/scsctl-0.0.4.tar.gz release/scsctl-0.0.4.tar.gz
+        cp dist/scsctl-0.0.4-py3-none-any.whl release/scsctl-0.0.4-py3-none-any.whl
+          
+    - name: Publish distribution 📦 to Test PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository-url: https://test.pypi.org/legacy/
+        packages-dir: release
