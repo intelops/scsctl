@@ -6,15 +6,17 @@ from scsctl.helper.falco import (
     compare_and_find_extra_packages_using_falco,
     print_falco_packages,
     save_falco_data,
+    save_falco_data_to_dgraph
 )
 from scsctl.helper.pyroscope import (
     get_pyroscope_data,
     print_pyroscope_packages,
     save_pyroscope_data,
     compare_and_find_pyroscope_extra_packages,
+    save_pyroscope_data_to_dgraph
 )
 from scsctl.helper.common import AppDetails, generate_final_report, modify_and_build_docker_image,modify_and_build_docker_images, custom_style_fancy
-from scsctl.helper.trivy import get_sbom_report, print_sbom_report, save_sbom_data
+from scsctl.helper.trivy import get_sbom_report, print_sbom_report, save_sbom_data, save_sbom_data_to_dgraph
 from scsctl.helper.renovate import (check_if_node_and_npm_is_installed,check_if_renovate_is_installed_globally,run_renovate_on_a_repository)
 
 import yaml
@@ -48,6 +50,9 @@ batch_id = f"scsctl_{current_datetime}"
     flag_value=None,
 )
 @click.option("--db_enabled", help="Enable db", default=False, is_flag=True, flag_value=True)
+@click.option("--dgraph_enabled", help="Enable dgraph", default=False, is_flag=True, flag_value=True)
+@click.option("--dgraph_db_host", help="Host of the db", default="localhost", is_flag=False, flag_value=None)
+@click.option("--dgraph_db_port", help="Port of the db", default=9080, is_flag=False, flag_value=None)
 @click.option("--db_hashicorp_vault_enabled", help="Read db creds from hashicorp vault", default=False, is_flag=True, flag_value=True)
 @click.option("--db_hashicorp_vault_url", help="Url of the hashicorp vault", default=None, is_flag=False, flag_value=None)
 @click.option("--db_hashicorp_vault_token", help="Token of the hashicorp vault", default=None, is_flag=False, flag_value=None)
@@ -79,7 +84,10 @@ def scan(
     db_hashicorp_vault_enabled=False,
     db_hashicorp_vault_url=None,
     db_hashicorp_vault_token=None,
-    db_hashicorp_vault_path=None
+    db_hashicorp_vault_path=None,
+    dgraph_enabled=False,
+    dgraph_db_host="localhost",
+    dgraph_db_port=9080
 ):
     config_data = {}
     if config_file is not None:
@@ -115,6 +123,12 @@ def scan(
             renovate_enabled = config_data.get("renovate_enabled", False)
         if not db_hashicorp_vault_enabled:
             db_hashicorp_vault_enabled = config_data.get("db_hashicorp_vault_enabled", False)
+        if not dgraph_enabled:
+            dgraph_enabled = config_data.get("dgraph_enabled", False)
+        if not dgraph_db_host:
+            dgraph_db_host = config_data.get("dgraph_db_host", "localhost")
+        if not dgraph_db_port:
+            dgraph_db_port = config_data.get("dgraph_db_port", 9080)
 
         # Check mandatory fields
         if pyroscope_app_name is None:
@@ -164,6 +178,12 @@ def scan(
                     sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages
                 )
             if db_enabled:
+                if(dgraph_enabled):
+                    save_sbom_data_to_dgraph(sbom_data=sbom_report, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
+                    save_pyroscope_data_to_dgraph(pyroscope_data=pyroscope_data, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
+                    if falco_enabled:
+                        save_falco_data_to_dgraph(falco_data=falco_found_extra_packages, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
+                    return
                 if(db_hashicorp_vault_enabled and (db_hashicorp_vault_url == "" or db_hashicorp_vault_token == "" or db_hashicorp_vault_path == "")):
                     click.echo("Please provide db_hashicorp_vault_url, db_hashicorp_vault_token and db_hashicorp_vault_path to save data to db")
                     return

@@ -1,0 +1,425 @@
+{
+    "SchemaVersion": 2,
+    "ArtifactName": "dagflow-app:latest",
+    "ArtifactType": "container_image",
+    "Metadata": {
+        "OS": {
+            "Family": "debian",
+            "Name": "12.1"
+        },
+        "ImageID": "sha256:346f866546896ea789c5c2fa6e86210082a83e620948dc2c52aa66835759ac4e",
+        "DiffIDs": [
+            "sha256:7c85cfa30cb11b7606c0ee84c713a8f6c9faad7cb7ba92f1f33ba36d4731cc82",
+            "sha256:f6589095d5b5a4933db1a75edc905d20570c9f6e5dbebd9a7c39a8eef81bb3fd",
+            "sha256:a981dddd4c650efa96d82013fba1d1189cf4648cd1e766b34120b32af9ce8a06",
+            "sha256:01d6cdeac53917b874d5adac862ab90dcf22489b7914611a1bde7c84db0a99ae",
+            "sha256:c26432533a6af2f6f59d50aba5f76f2b61c2e0088c7e01b5d2a8708b6cb9ef08",
+            "sha256:950807b8113029e596ecd31900481c81d112069c2c644b9376b52d4f38080c9b",
+            "sha256:8e61b2657a8166cc9e7166f9af2165295c60fec29501f3b19c7a502ca912bf3a",
+            "sha256:9f64fe0537e89e159915c38bd700531a9bb6f21a6442b5a22040c4af6bf9f26b",
+            "sha256:504957b5bc380781991e584c4dec22a4851b340da66efbcb48f1821e5dd5b7bb",
+            "sha256:2f5d5ec1305274b3d5bc105edd9dfc87c49038e4f1956f3c89f8755c6008830b",
+            "sha256:d1f91d6c5c8c3c3dd737516e440462bd54de1f79cea4975ad918a988e4ea912f",
+            "sha256:2d661f5b9b0947e36d4cce9f4af907d76e8d21ca7b23ec13f5a72e29c310d535",
+            "sha256:eb8eeef061d2bf930b1cf7bd1db6d1211be664905979524e5604a619423d8d5f",
+            "sha256:dcfaefd67cfb108707cc35ba2c4a072cd70c69c6df7b8c31315529d5f7d03d42",
+            "sha256:661f27320a54eae390a7f00515b4fe43447d3eda0bd4672bb633bdb5bb180fea",
+            "sha256:7ed390f141a295fc8c91e0d4dd1aba2974d9ff55d8bc92f6e53ecfae3923e910",
+            "sha256:32c61845a69a3e01d4a8e5f1128513572b676168215a6f2755e791a28ed884a8"
+        ],
+        "RepoTags": [
+            "dagflow-app:latest"
+        ],
+        "ImageConfig": {
+            "architecture": "amd64",
+            "created": "2023-10-11T16:56:23.471034971+05:30",
+            "history": [
+                {
+                    "created": "2023-09-20T04:55:26Z",
+                    "created_by": "/bin/sh -c #(nop) ADD file:ce04d6a354feaef93795269c859f36667fce9efda23c61b37d7060263b66ed4e in / "
+                },
+                {
+                    "created": "2023-09-20T04:55:26Z",
+                    "created_by": "/bin/sh -c #(nop)  CMD [\"bash\"]",
+                    "empty_layer": true
+                },
+                {
+                    "created": "2023-09-20T09:20:42Z",
+                    "created_by": "/bin/sh -c set -eux; \tapt-get update; \tapt-get install -y --no-install-recommends \t\tca-certificates \t\tcurl \t\tgnupg \t\tnetbase \t\tsq \t\twget \t; \trm -rf /var/lib/apt/lists/*"
+                },
+                {
+                    "created": "2023-09-20T09:21:02Z",
+                    "created_by": "/bin/sh -c apt-get update && apt-get install -y --no-install-recommends \t\tgit \t\tmercurial \t\topenssh-client \t\tsubversion \t\t\t\tprocps \t&& rm -rf /var/lib/apt/lists/*"
+                },
+                {
+                    "created": "2023-09-20T09:21:58Z",
+                    "created_by": "/bin/sh -c set -ex; \tapt-get update; \tapt-get install -y --no-install-recommends \t\tautoconf \t\tautomake \t\tbzip2 \t\tdpkg-dev \t\tfile \t\tg++ \t\tgcc \t\timagemagick \t\tlibbz2-dev \t\tlibc6-dev \t\tlibcurl4-openssl-dev \t\tlibdb-dev \t\tlibevent-dev \t\tlibffi-dev \t\tlibgdbm-dev \t\tlibglib2.0-dev \t\tlibgmp-dev \t\tlibjpeg-dev \t\tlibkrb5-dev \t\tliblzma-dev \t\tlibmagickcore-dev \t\tlibmagickwand-dev \t\tlibmaxminddb-dev \t\tlibncurses5-dev \t\tlibncursesw5-dev \t\tlibpng-dev \t\tlibpq-dev \t\tlibreadline-dev \t\tlibsqlite3-dev \t\tlibssl-dev \t\tlibtool \t\tlibwebp-dev \t\tlibxml2-dev \t\tlibxslt-dev \t\tlibyaml-dev \t\tmake \t\tpatch \t\tunzip \t\txz-utils \t\tzlib1g-dev \t\t\t\t$( \t\t\tif apt-cache show 'default-libmysqlclient-dev' 2>/dev/null | grep -q '^Version:'; then \t\t\t\techo 'default-libmysqlclient-dev'; \t\t\telse \t\t\t\techo 'libmysqlclient-dev'; \t\t\tfi \t\t) \t; \trm -rf /var/lib/apt/lists/*"
+                },
+                {
+                    "created": "2023-08-24T15:49:13Z",
+                    "created_by": "ENV PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                    "comment": "buildkit.dockerfile.v0",
+                    "empty_layer": true
+                },
+                {
+                    "created": "2023-08-24T15:49:13Z",
+                    "created_by": "ENV LANG=C.UTF-8",
+                    "comment": "buildkit.dockerfile.v0",
+                    "empty_layer": true
+                },
+                {
+                    "created": "2023-08-24T15:49:13Z",
+                    "created_by": "RUN /bin/sh -c set -eux; \tapt-get update; \tapt-get install -y --no-install-recommends \t\tlibbluetooth-dev \t\ttk-dev \t\tuuid-dev \t; \trm -rf /var/lib/apt/lists/* # buildkit",
+                    "comment": "buildkit.dockerfile.v0"
+                },
+                {
+                    "created": "2023-08-24T15:49:13Z",
+                    "created_by": "ENV GPG_KEY=A035C8C19219BA821ECEA86B64E628F8D684696D",
+                    "comment": "buildkit.dockerfile.v0",
+                    "empty_layer": true
+                },
+                {
+                    "created": "2023-08-24T15:49:13Z",
+                    "created_by": "ENV PYTHON_VERSION=3.10.13",
+                    "comment": "buildkit.dockerfile.v0",
+                    "empty_layer": true
+                },
+                {
+                    "created": "2023-08-24T15:49:13Z",
+                    "created_by": "RUN /bin/sh -c set -eux; \t\twget -O python.tar.xz \"https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz\"; \twget -O python.tar.xz.asc \"https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc\"; \tGNUPGHOME=\"$(mktemp -d)\"; export GNUPGHOME; \tgpg --batch --keyserver hkps://keys.openpgp.org --recv-keys \"$GPG_KEY\"; \tgpg --batch --verify python.tar.xz.asc python.tar.xz; \tgpgconf --kill all; \trm -rf \"$GNUPGHOME\" python.tar.xz.asc; \tmkdir -p /usr/src/python; \ttar --extract --directory /usr/src/python --strip-components=1 --file python.tar.xz; \trm python.tar.xz; \t\tcd /usr/src/python; \tgnuArch=\"$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)\"; \t./configure \t\t--build=\"$gnuArch\" \t\t--enable-loadable-sqlite-extensions \t\t--enable-optimizations \t\t--enable-option-checking=fatal \t\t--enable-shared \t\t--with-lto \t\t--with-system-expat \t\t--without-ensurepip \t; \tnproc=\"$(nproc)\"; \tEXTRA_CFLAGS=\"$(dpkg-buildflags --get CFLAGS)\"; \tLDFLAGS=\"$(dpkg-buildflags --get LDFLAGS)\"; \tmake -j \"$nproc\" \t\t\"EXTRA_CFLAGS=${EXTRA_CFLAGS:-}\" \t\t\"LDFLAGS=${LDFLAGS:-}\" \t\t\"PROFILE_TASK=${PROFILE_TASK:-}\" \t; \trm python; \tmake -j \"$nproc\" \t\t\"EXTRA_CFLAGS=${EXTRA_CFLAGS:-}\" \t\t\"LDFLAGS=${LDFLAGS:--Wl},-rpath='\\$\\$ORIGIN/../lib'\" \t\t\"PROFILE_TASK=${PROFILE_TASK:-}\" \t\tpython \t; \tmake install; \t\tbin=\"$(readlink -ve /usr/local/bin/python3)\"; \tdir=\"$(dirname \"$bin\")\"; \tmkdir -p \"/usr/share/gdb/auto-load/$dir\"; \tcp -vL Tools/gdb/libpython.py \"/usr/share/gdb/auto-load/$bin-gdb.py\"; \t\tcd /; \trm -rf /usr/src/python; \t\tfind /usr/local -depth \t\t\\( \t\t\t\\( -type d -a \\( -name test -o -name tests -o -name idle_test \\) \\) \t\t\t-o \\( -type f -a \\( -name '*.pyc' -o -name '*.pyo' -o -name 'libpython*.a' \\) \\) \t\t\\) -exec rm -rf '{}' + \t; \t\tldconfig; \t\tpython3 --version # buildkit",
+                    "comment": "buildkit.dockerfile.v0"
+                },
+                {
+                    "created": "2023-08-24T15:49:13Z",
+                    "created_by": "RUN /bin/sh -c set -eux; \tfor src in idle3 pydoc3 python3 python3-config; do \t\tdst=\"$(echo \"$src\" | tr -d 3)\"; \t\t[ -s \"/usr/local/bin/$src\" ]; \t\t[ ! -e \"/usr/local/bin/$dst\" ]; \t\tln -svT \"$src\" \"/usr/local/bin/$dst\"; \tdone # buildkit",
+                    "comment": "buildkit.dockerfile.v0"
+                },
+                {
+                    "created": "2023-08-24T15:49:13Z",
+                    "created_by": "ENV PYTHON_PIP_VERSION=23.0.1",
+                    "comment": "buildkit.dockerfile.v0",
+                    "empty_layer": true
+                },
+                {
+                    "created": "2023-08-24T15:49:13Z",
+                    "created_by": "ENV PYTHON_SETUPTOOLS_VERSION=65.5.1",
+                    "comment": "buildkit.dockerfile.v0",
+                    "empty_layer": true
+                },
+                {
+                    "created": "2023-08-24T15:49:13Z",
+                    "created_by": "ENV PYTHON_GET_PIP_URL=https://github.com/pypa/get-pip/raw/9af82b715db434abb94a0a6f3569f43e72157346/public/get-pip.py",
+                    "comment": "buildkit.dockerfile.v0",
+                    "empty_layer": true
+                },
+                {
+                    "created": "2023-08-24T15:49:13Z",
+                    "created_by": "ENV PYTHON_GET_PIP_SHA256=45a2bb8bf2bb5eff16fdd00faef6f29731831c7c59bd9fc2bf1f3bed511ff1fe",
+                    "comment": "buildkit.dockerfile.v0",
+                    "empty_layer": true
+                },
+                {
+                    "created": "2023-08-24T15:49:13Z",
+                    "created_by": "RUN /bin/sh -c set -eux; \t\twget -O get-pip.py \"$PYTHON_GET_PIP_URL\"; \techo \"$PYTHON_GET_PIP_SHA256 *get-pip.py\" | sha256sum -c -; \t\texport PYTHONDONTWRITEBYTECODE=1; \t\tpython get-pip.py \t\t--disable-pip-version-check \t\t--no-cache-dir \t\t--no-compile \t\t\"pip==$PYTHON_PIP_VERSION\" \t\t\"setuptools==$PYTHON_SETUPTOOLS_VERSION\" \t; \trm -f get-pip.py; \t\tpip --version # buildkit",
+                    "comment": "buildkit.dockerfile.v0"
+                },
+                {
+                    "created": "2023-08-24T15:49:13Z",
+                    "created_by": "CMD [\"python3\"]",
+                    "comment": "buildkit.dockerfile.v0",
+                    "empty_layer": true
+                },
+                {
+                    "created": "2023-10-11T11:00:00Z",
+                    "created_by": "ARG AIRFLOW_VERSION=2.5.3",
+                    "comment": "buildkit.dockerfile.v0",
+                    "empty_layer": true
+                },
+                {
+                    "created": "2023-10-11T11:00:00Z",
+                    "created_by": "ARG PYTHON_VERSION=3.10",
+                    "comment": "buildkit.dockerfile.v0",
+                    "empty_layer": true
+                },
+                {
+                    "created": "2023-10-11T11:00:00Z",
+                    "created_by": "RUN |2 AIRFLOW_VERSION=2.5.3 PYTHON_VERSION=3.10 /bin/sh -c echo ${AIRFLOW_VERSION} ${PYTHON_VERSION} # buildkit",
+                    "comment": "buildkit.dockerfile.v0"
+                },
+                {
+                    "created": "2023-10-11T11:00:00Z",
+                    "created_by": "RUN |2 AIRFLOW_VERSION=2.5.3 PYTHON_VERSION=3.10 /bin/sh -c echo \"$(echo $PYTHON_VERSION | cut -d '.' -f 1,2)\" > version.txt # buildkit",
+                    "comment": "buildkit.dockerfile.v0"
+                },
+                {
+                    "created": "2023-10-11T11:01:18Z",
+                    "created_by": "RUN |2 AIRFLOW_VERSION=2.5.3 PYTHON_VERSION=3.10 /bin/sh -c VERSION_MAJOR_MINOR=$(cat version.txt)     && pip install \"apache-airflow[postgres,google]==${AIRFLOW_VERSION}\" --constraint \"https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-$VERSION_MAJOR_MINOR.txt\" # buildkit",
+                    "comment": "buildkit.dockerfile.v0"
+                },
+                {
+                    "created": "2023-10-11T11:01:21Z",
+                    "created_by": "RUN |2 AIRFLOW_VERSION=2.5.3 PYTHON_VERSION=3.10 /bin/sh -c pip install plyvel # buildkit",
+                    "comment": "buildkit.dockerfile.v0"
+                },
+                {
+                    "created": "2023-10-11T11:01:21Z",
+                    "created_by": "WORKDIR /app",
+                    "comment": "buildkit.dockerfile.v0"
+                },
+                {
+                    "created": "2023-10-11T11:01:25Z",
+                    "created_by": "RUN |2 AIRFLOW_VERSION=2.5.3 PYTHON_VERSION=3.10 /bin/sh -c pip install pyroscope-io # buildkit",
+                    "comment": "buildkit.dockerfile.v0"
+                },
+                {
+                    "created": "2023-10-11T11:01:25Z",
+                    "created_by": "COPY ./requirements.txt /app/requirements.txt # buildkit",
+                    "comment": "buildkit.dockerfile.v0"
+                },
+                {
+                    "created": "2023-10-11T11:01:32Z",
+                    "created_by": "RUN |2 AIRFLOW_VERSION=2.5.3 PYTHON_VERSION=3.10 /bin/sh -c pip install -r /app/requirements.txt # buildkit",
+                    "comment": "buildkit.dockerfile.v0"
+                },
+                {
+                    "created": "2023-10-11T11:26:23Z",
+                    "created_by": "COPY . /app # buildkit",
+                    "comment": "buildkit.dockerfile.v0"
+                },
+                {
+                    "created": "2023-10-11T11:26:23Z",
+                    "created_by": "EXPOSE map[8000/tcp:{}]",
+                    "comment": "buildkit.dockerfile.v0",
+                    "empty_layer": true
+                }
+            ],
+            "os": "linux",
+            "rootfs": {
+                "type": "layers",
+                "diff_ids": [
+                    "sha256:7c85cfa30cb11b7606c0ee84c713a8f6c9faad7cb7ba92f1f33ba36d4731cc82",
+                    "sha256:f6589095d5b5a4933db1a75edc905d20570c9f6e5dbebd9a7c39a8eef81bb3fd",
+                    "sha256:a981dddd4c650efa96d82013fba1d1189cf4648cd1e766b34120b32af9ce8a06",
+                    "sha256:01d6cdeac53917b874d5adac862ab90dcf22489b7914611a1bde7c84db0a99ae",
+                    "sha256:c26432533a6af2f6f59d50aba5f76f2b61c2e0088c7e01b5d2a8708b6cb9ef08",
+                    "sha256:950807b8113029e596ecd31900481c81d112069c2c644b9376b52d4f38080c9b",
+                    "sha256:8e61b2657a8166cc9e7166f9af2165295c60fec29501f3b19c7a502ca912bf3a",
+                    "sha256:9f64fe0537e89e159915c38bd700531a9bb6f21a6442b5a22040c4af6bf9f26b",
+                    "sha256:504957b5bc380781991e584c4dec22a4851b340da66efbcb48f1821e5dd5b7bb",
+                    "sha256:2f5d5ec1305274b3d5bc105edd9dfc87c49038e4f1956f3c89f8755c6008830b",
+                    "sha256:d1f91d6c5c8c3c3dd737516e440462bd54de1f79cea4975ad918a988e4ea912f",
+                    "sha256:2d661f5b9b0947e36d4cce9f4af907d76e8d21ca7b23ec13f5a72e29c310d535",
+                    "sha256:eb8eeef061d2bf930b1cf7bd1db6d1211be664905979524e5604a619423d8d5f",
+                    "sha256:dcfaefd67cfb108707cc35ba2c4a072cd70c69c6df7b8c31315529d5f7d03d42",
+                    "sha256:661f27320a54eae390a7f00515b4fe43447d3eda0bd4672bb633bdb5bb180fea",
+                    "sha256:7ed390f141a295fc8c91e0d4dd1aba2974d9ff55d8bc92f6e53ecfae3923e910",
+                    "sha256:32c61845a69a3e01d4a8e5f1128513572b676168215a6f2755e791a28ed884a8"
+                ]
+            },
+            "config": {
+                "Cmd": [
+                    "python3"
+                ],
+                "Env": [
+                    "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                    "LANG=C.UTF-8",
+                    "GPG_KEY=A035C8C19219BA821ECEA86B64E628F8D684696D",
+                    "PYTHON_VERSION=3.10.13",
+                    "PYTHON_PIP_VERSION=23.0.1",
+                    "PYTHON_SETUPTOOLS_VERSION=65.5.1",
+                    "PYTHON_GET_PIP_URL=https://github.com/pypa/get-pip/raw/9af82b715db434abb94a0a6f3569f43e72157346/public/get-pip.py",
+                    "PYTHON_GET_PIP_SHA256=45a2bb8bf2bb5eff16fdd00faef6f29731831c7c59bd9fc2bf1f3bed511ff1fe"
+                ],
+                "Labels": {
+                    "com.docker.compose.project": "dagflow",
+                    "com.docker.compose.service": "app",
+                    "com.docker.compose.version": "2.20.2"
+                },
+                "WorkingDir": "/app",
+                "ArgsEscaped": true
+            }
+        }
+    },
+    "Results": [
+        {
+            "Target": "dagflow-app:latest (debian 12.1)",
+            "Class": "os-pkgs",
+            "Type": "debian",
+            "Vulnerabilities": [
+                {
+                    "VulnerabilityID": "CVE-2011-3374",
+                    "PkgID": "apt@2.6.1",
+                    "PkgName": "apt",
+                    "InstalledVersion": "2.6.1",
+                    "Status": "affected",
+                    "Layer": {
+                        "DiffID": "sha256:7c85cfa30cb11b7606c0ee84c713a8f6c9faad7cb7ba92f1f33ba36d4731cc82"
+                    },
+                    "SeveritySource": "debian",
+                    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-3374",
+                    "DataSource": {
+                        "ID": "debian",
+                        "Name": "Debian Security Tracker",
+                        "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+                    },
+                    "Title": "It was found that apt-key in apt, all versions, do not correctly valid ...",
+                    "Description": "It was found that apt-key in apt, all versions, do not correctly validate gpg keys with the master keyring, leading to a potential man-in-the-middle attack.",
+                    "Severity": "LOW",
+                    "CweIDs": [
+                        "CWE-347"
+                    ],
+                    "CVSS": {
+                        "nvd": {
+                            "V2Vector": "AV:N/AC:M/Au:N/C:N/I:P/A:N",
+                            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:N",
+                            "V2Score": 4.3,
+                            "V3Score": 3.7
+                        }
+                    },
+                    "References": [
+                        "https://access.redhat.com/security/cve/cve-2011-3374",
+                        "https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=642480",
+                        "https://people.canonical.com/~ubuntu-security/cve/2011/CVE-2011-3374.html",
+                        "https://seclists.org/fulldisclosure/2011/Sep/221",
+                        "https://security-tracker.debian.org/tracker/CVE-2011-3374",
+                        "https://snyk.io/vuln/SNYK-LINUX-APT-116518",
+                        "https://ubuntu.com/security/CVE-2011-3374"
+                    ],
+                    "PublishedDate": "2019-11-26T00:15:00Z",
+                    "LastModifiedDate": "2021-02-09T16:08:00Z"
+                },
+                {
+                    "VulnerabilityID": "TEMP-0841856-B18BAF",
+                    "PkgID": "bash@5.2.15-2+b2",
+                    "PkgName": "bash",
+                    "InstalledVersion": "5.2.15-2+b2",
+                    "Status": "affected",
+                    "Layer": {
+                        "DiffID": "sha256:7c85cfa30cb11b7606c0ee84c713a8f6c9faad7cb7ba92f1f33ba36d4731cc82"
+                    },
+                    "SeveritySource": "debian",
+                    "PrimaryURL": "https://security-tracker.debian.org/tracker/TEMP-0841856-B18BAF",
+                    "DataSource": {
+                        "ID": "debian",
+                        "Name": "Debian Security Tracker",
+                        "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+                    },
+                    "Title": "[Privilege escalation possible to other user than root]",
+                    "Severity": "LOW"
+                }
+            ]
+        },
+        {
+            "Target": "Python",
+            "Class": "lang-pkgs",
+            "Type": "python-pkg",
+            "Vulnerabilities": [
+                {
+                    "VulnerabilityID": "CVE-2023-30861",
+                    "PkgName": "Flask",
+                    "PkgPath": "usr/local/lib/python3.10/site-packages/Flask-2.2.3.dist-info/METADATA",
+                    "InstalledVersion": "2.2.3",
+                    "FixedVersion": "2.3.2, 2.2.5",
+                    "Status": "fixed",
+                    "Layer": {
+                        "DiffID": "sha256:d1f91d6c5c8c3c3dd737516e440462bd54de1f79cea4975ad918a988e4ea912f"
+                    },
+                    "SeveritySource": "ghsa",
+                    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-30861",
+                    "DataSource": {
+                        "ID": "ghsa",
+                        "Name": "GitHub Security Advisory pip",
+                        "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
+                    },
+                    "Title": "flask: Possible disclosure of permanent session cookie due to missing Vary: Cookie header",
+                    "Description": "Flask is a lightweight WSGI web application framework. When all of the following conditions are met, a response containing data intended for one client may be cached and subsequently sent by the proxy to other clients. If the proxy also caches `Set-Cookie` headers, it may send one client's `session` cookie to other clients. The severity depends on the application's use of the session and the proxy's behavior regarding cookies. The risk depends on all these conditions being met.\n\n1. The application must be hosted behind a caching proxy that does not strip cookies or ignore responses with cookies.\n2. The application sets `session.permanent = True`\n3. The application does not access or modify the session at any point during a request.\n4. `SESSION_REFRESH_EACH_REQUEST` enabled (the default).\n5. The application does not set a `Cache-Control` header to indicate that a page is private or should not be cached.\n\nThis happens because vulnerable versions of Flask only set the `Vary: Cookie` header when the session is accessed or modified, not when it is refreshed (re-sent to update the expiration) without being accessed or modified. This issue has been fixed in versions 2.3.2 and 2.2.5.",
+                    "Severity": "HIGH",
+                    "CweIDs": [
+                        "CWE-539"
+                    ],
+                    "CVSS": {
+                        "ghsa": {
+                            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+                            "V3Score": 7.5
+                        },
+                        "nvd": {
+                            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+                            "V3Score": 7.5
+                        },
+                        "redhat": {
+                            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+                            "V3Score": 7.5
+                        }
+                    },
+                    "References": [
+                        "https://access.redhat.com/security/cve/CVE-2023-30861",
+                        "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-30861",
+                        "https://github.com/pallets/flask",
+                        "https://github.com/pallets/flask/commit/70f906c51ce49c485f1d355703e9cc3386b1cc2b",
+                        "https://github.com/pallets/flask/commit/8646edca6f47e2cd57464081b3911218d4734f8d (2.2.5)",
+                        "https://github.com/pallets/flask/commit/8705dd39c4fa563ea0fe0bf84c85da8fcc98b88d (2.3.2)",
+                        "https://github.com/pallets/flask/commit/afd63b16170b7c047f5758eb910c416511e9c965",
+                        "https://github.com/pallets/flask/releases/tag/2.2.5",
+                        "https://github.com/pallets/flask/releases/tag/2.3.2",
+                        "https://github.com/pallets/flask/security/advisories/GHSA-m2qf-hxjv-5gpq",
+                        "https://github.com/pypa/advisory-database/tree/main/vulns/flask/PYSEC-2023-62.yaml",
+                        "https://linux.oracle.com/cve/CVE-2023-30861.html",
+                        "https://linux.oracle.com/errata/ELSA-2023-12710.html",
+                        "https://lists.debian.org/debian-lts-announce/2023/08/msg00024.html",
+                        "https://nvd.nist.gov/vuln/detail/CVE-2023-30861",
+                        "https://security.netapp.com/advisory/ntap-20230818-0006/",
+                        "https://ubuntu.com/security/notices/USN-6111-1",
+                        "https://www.cve.org/CVERecord?id=CVE-2023-30861",
+                        "https://www.debian.org/security/2023/dsa-5442"
+                    ],
+                    "PublishedDate": "2023-05-02T18:15:00Z",
+                    "LastModifiedDate": "2023-08-20T21:15:00Z"
+                },
+                {
+                    "VulnerabilityID": "CVE-2023-29005",
+                    "PkgName": "Flask-AppBuilder",
+                    "PkgPath": "usr/local/lib/python3.10/site-packages/Flask_AppBuilder-4.1.4.dist-info/METADATA",
+                    "InstalledVersion": "4.1.4",
+                    "FixedVersion": "4.3.0",
+                    "Status": "fixed",
+                    "Layer": {
+                        "DiffID": "sha256:d1f91d6c5c8c3c3dd737516e440462bd54de1f79cea4975ad918a988e4ea912f"
+                    },
+                    "SeveritySource": "ghsa",
+                    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29005",
+                    "DataSource": {
+                        "ID": "ghsa",
+                        "Name": "GitHub Security Advisory pip",
+                        "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
+                    },
+                    "Title": "Flask-AppBuilder Has No Rate Limiting on Login AUTH DB",
+                    "Description": "Flask-AppBuilder versions before 4.3.0 lack rate limiting which can allow an attacker to brute-force user credentials. Version 4.3.0 includes the ability to enable rate limiting using `AUTH_RATE_LIMITED = True`, `RATELIMIT_ENABLED = True`, and setting an `AUTH_RATE_LIMIT`.",
+                    "Severity": "HIGH",
+                    "CweIDs": [
+                        "CWE-307"
+                    ],
+                    "CVSS": {
+                        "ghsa": {
+                            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+                            "V3Score": 7.5
+                        },
+                        "nvd": {
+                            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+                            "V3Score": 7.5
+                        }
+                    },
+                    "References": [
+                        "https://flask-limiter.readthedocs.io/en/stable/configuration.html",
+                        "https://github.com/dpgaspar/Flask-AppBuilder",
+                        "https://github.com/dpgaspar/Flask-AppBuilder/pull/1976",
+                        "https://github.com/dpgaspar/Flask-AppBuilder/releases/tag/v4.3.0",
+                        "https://github.com/dpgaspar/Flask-AppBuilder/security/advisories/GHSA-9hcr-9hcv-x6pv",
+                        "https://nvd.nist.gov/vuln/detail/CVE-2023-29005"
+                    ],
+                    "PublishedDate": "2023-04-10T21:15:00Z",
+                    "LastModifiedDate": "2023-04-18T17:02:00Z"
+                }
+            ]
+        }
+    ]
+}
