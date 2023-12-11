@@ -36,6 +36,9 @@ WORKDIR /usr/app
 COPY --chown=python:python --from=build /usr/app/venv ./venv
 COPY --chown=python:python . .
 
+RUN apt-get -y update; apt-get -y install curl
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
 
 USER 999
 
@@ -49,6 +52,9 @@ RUN python -m build
 
 #Find the wheel file name and install the wheel
 RUN pip install $(find dist -name "*.whl")
+
+# RUN apt-get -y update; apt-get -y install curl
+
 
 EXPOSE 5000
 
