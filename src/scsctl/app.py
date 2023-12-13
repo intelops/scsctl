@@ -183,14 +183,14 @@ def scan(
                     save_pyroscope_data_to_dgraph(pyroscope_data=pyroscope_data, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
                     if falco_enabled:
                         save_falco_data_to_dgraph(falco_data=falco_found_extra_packages, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
-                    return
-                if(db_hashicorp_vault_enabled and (db_hashicorp_vault_url == "" or db_hashicorp_vault_token == "" or db_hashicorp_vault_path == "")):
-                    click.echo("Please provide db_hashicorp_vault_url, db_hashicorp_vault_token and db_hashicorp_vault_path to save data to db")
-                    return
-                save_sbom_data(sbom_data=sbom_report, batch_id=batch_id, vault_enabled=db_hashicorp_vault_enabled, creds={"url":db_hashicorp_vault_url,"token":db_hashicorp_vault_token,"path":db_hashicorp_vault_path})
-                save_pyroscope_data(pyroscope_data=pyroscope_data, batch_id=batch_id, vault_enabled=db_hashicorp_vault_enabled, creds={"url":db_hashicorp_vault_url,"token":db_hashicorp_vault_token,"path":db_hashicorp_vault_path})
-                if falco_enabled:
-                    save_falco_data(falco_data=falco_found_extra_packages, batch_id=batch_id, vault_enabled=db_hashicorp_vault_enabled, creds={"url":db_hashicorp_vault_url,"token":db_hashicorp_vault_token,"path":db_hashicorp_vault_path})
+                else:
+                    if(db_hashicorp_vault_enabled and (db_hashicorp_vault_url == "" or db_hashicorp_vault_token == "" or db_hashicorp_vault_path == "")):
+                        click.echo("Please provide db_hashicorp_vault_url, db_hashicorp_vault_token and db_hashicorp_vault_path to save data to db")
+                    else:
+                        save_sbom_data(sbom_data=sbom_report, batch_id=batch_id, vault_enabled=db_hashicorp_vault_enabled, creds={"url":db_hashicorp_vault_url,"token":db_hashicorp_vault_token,"path":db_hashicorp_vault_path})
+                        save_pyroscope_data(pyroscope_data=pyroscope_data, batch_id=batch_id, vault_enabled=db_hashicorp_vault_enabled, creds={"url":db_hashicorp_vault_url,"token":db_hashicorp_vault_token,"path":db_hashicorp_vault_path})
+                        if falco_enabled:
+                            save_falco_data(falco_data=falco_found_extra_packages, batch_id=batch_id, vault_enabled=db_hashicorp_vault_enabled, creds={"url":db_hashicorp_vault_url,"token":db_hashicorp_vault_token,"path":db_hashicorp_vault_path})
 
         else:
             scan_status = False

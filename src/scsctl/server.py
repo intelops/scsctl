@@ -124,11 +124,11 @@ async def scan_api(config: Config):
                     save_pyroscope_data_to_dgraph(pyroscope_data=pyroscope_data, batch_id=batch_id,dgraph_creds={"host": config.dgraph_db_host, "port": config.dgraph_db_port})
                     if config.falco_enabled:
                         save_falco_data_to_dgraph(falco_data=falco_found_extra_packages, batch_id=batch_id,dgraph_creds={"host": config.dgraph_db_host, "port": config.dgraph_db_port})
-                    return
-                save_sbom_data(sbom_data=sbom_report, batch_id=batch_id)
-                save_pyroscope_data(pyroscope_data=pyroscope_data, batch_id=batch_id)
-                if config.falco_enabled:
-                    save_falco_data(falco_data=falco_found_extra_packages, batch_id=batch_id)
+                else:
+                    save_sbom_data(sbom_data=sbom_report, batch_id=batch_id)
+                    save_pyroscope_data(pyroscope_data=pyroscope_data, batch_id=batch_id)
+                    if config.falco_enabled:
+                        save_falco_data(falco_data=falco_found_extra_packages, batch_id=batch_id)
 
         else:
             scan_status = False
