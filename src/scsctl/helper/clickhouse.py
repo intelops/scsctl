@@ -1,6 +1,6 @@
 import os
 from clickhouse_driver import connect
-from db_credentials import get_credentials_from_hashicorp_vault
+from scsctl.helper.db_credentials import get_credentials_from_hashicorp_vault
 
 
 def connect_to_db(database_name: str , vault_enabled=False, creds = {}):

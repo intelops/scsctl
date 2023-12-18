@@ -6,12 +6,14 @@ import questionary
 from datetime import datetime
 from scsctl.helper.common import AppDetails
 from scsctl.helper.clickhouse import connect_to_db
+from scsctl.helper.dgraph import connect_local
 
 
 def get_pyroscope_data(app_details: AppDetails):
     # url = f"http://localhost:4040/render?query={pyroscope_app_name}.cpu&from=now-1h&until=now&format=json"
     click.echo(f"Fetching data from pyroscope for {app_details.pyroscope_app_name}...")
     url = f"{app_details.pyroscope_url}/render?query={app_details.pyroscope_app_name}.cpu&from=now-1h&until=now&format=json"
+    print(url)
     try:
         response = requests.get(url)
     except Exception as e:
@@ -110,3 +112,29 @@ def save_pyroscope_data(pyroscope_data, batch_id,vault_enabled=False, creds = {}
         )
 
         cursor.close()
+
+def save_pyroscope_data_to_dgraph(pyroscope_data, batch_id,dgraph_creds = {}):
+    client, client_stub = connect_local(host=dgraph_creds["host"], port=dgraph_creds["port"])
+
+    #Sbom data is a list of vulnerabilities in json format, I have to add batch id to the json. Also the schema is not fixed, so I have to add the schema to the json
+
+    data = {"report_type":"pyroscope_report","batch_id": batch_id, "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"), "pyroscope_report": pyroscope_data}
+
+    try:
+        # Start a new transaction for data mutation
+        txn = client.txn()
+
+        try:
+            #Save sbom data to dgraph
+            # Create a new node
+            response = txn.mutate(set_obj=data)
+            txn.commit()
+            print(f"Saved pyroscope data to dgraph.")
+
+        finally:
+            # Clean up resources
+            txn.discard()
+
+    finally:
+        # Clean up resources
+        client_stub.close()

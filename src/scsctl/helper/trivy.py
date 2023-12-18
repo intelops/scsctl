@@ -6,7 +6,7 @@ from scsctl.helper.clickhouse import connect_to_db
 from scsctl.helper.common import AppDetails
 import questionary
 from datetime import datetime
-
+from scsctl.helper.dgraph import connect_local
 
 def install_trivy():
     try:
@@ -23,7 +23,7 @@ def install_trivy():
 def get_sbom_report(app_details: AppDetails):
     # Check if Trivy is installed
     try:
-        result = subprocess.run("$HOME/.local/bin/trivy --version", capture_output=True, shell=True)
+        result = subprocess.run("/usr/local/bin/trivy --version", capture_output=True, shell=True)
         if result.returncode != 0:
             click.echo("\nTrivy is not installed. Installing Trivy...")
             install_trivy()
@@ -32,7 +32,7 @@ def get_sbom_report(app_details: AppDetails):
         return
 
     # Trivy is installed, proceed with the scan
-    cmd = f"$HOME/.local/bin/trivy image {app_details.docker_image_name} --format json"
+    cmd = f"/usr/local/bin/trivy image {app_details.docker_image_name} --cache-dir /tmp/.cache --format json"
     try:
         click.echo(f"Running Trivy scan")
         result = subprocess.run(cmd, capture_output=True, shell=True, check=True)
@@ -120,3 +120,33 @@ def save_sbom_data(sbom_data, batch_id,vault_enabled=False, creds = {}):
         )
 
         cursor.close()
+
+def save_sbom_data_to_dgraph(sbom_data, batch_id,dgraph_creds = {}):
+    client, client_stub = connect_local(host=dgraph_creds["host"], port=dgraph_creds["port"])
+
+    #Sbom data is a list of vulnerabilities in json format, I have to add batch id to the json. Also the schema is not fixed, so I have to add the schema to the json
+
+    #Add batch id to the json
+    sbom_data = json.loads(sbom_data)
+    sbom_data["batch_id"] = batch_id
+    sbom_data["report_type"] = "sbom_report"
+    sbom_data["created_at"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    try:
+        # Start a new transaction for data mutation
+        txn = client.txn()
+
+        try:
+            #Save sbom data to dgraph
+            # Create a new node
+            response = txn.mutate(set_obj=sbom_data)
+            txn.commit()
+            print(f"Saved sbom data to dgraph.")
+
+        finally:
+            # Clean up resources
+            txn.discard()
+
+    finally:
+        # Clean up resources
+        client_stub.close()

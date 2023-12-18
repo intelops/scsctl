@@ -5,17 +5,19 @@ from scsctl.helper.pyroscope import (
     get_pyroscope_data,
     save_pyroscope_data,
     compare_and_find_pyroscope_extra_packages,
+    save_pyroscope_data_to_dgraph
 )
 
 from scsctl.helper.trivy import (get_sbom_report)
 
 from scsctl.helper.common import AppDetails,generate_final_report
 
-from scsctl.helper.trivy import get_sbom_report, save_sbom_data
+from scsctl.helper.trivy import get_sbom_report, save_sbom_data, save_sbom_data_to_dgraph
 
 from scsctl.helper.falco import (
     parse_logs_and_get_package_paths,
     save_falco_data,
+    save_falco_data_to_dgraph
 )
 
 from datetime import datetime
@@ -33,6 +35,11 @@ class Config(BaseModel):
     docker_file_folder_path: str = None
     db_enabled: bool = False
     falco_enabled: bool = False
+    renovate_enabled: bool = False
+    dgraph_enabled: bool = False
+    dgraph_db_host: str = None
+    dgraph_db_port: str = None
+    
 
 class RenovateConfig(BaseModel):
     token: str
@@ -74,6 +81,7 @@ async def renovate(renovateConfig: RenovateConfig):
 
 @app.post("/scan")
 async def scan_api(config: Config):
+    pyroscope_data = []
     pyroscope_found_extra_packages = []
     falco_found_extra_packages = []
     final_report = []
@@ -111,10 +119,16 @@ async def scan_api(config: Config):
                     sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages, is_api = True
                 )
             if config.db_enabled:
-                save_sbom_data(sbom_data=sbom_report, batch_id=batch_id)
-                save_pyroscope_data(pyroscope_data=pyroscope_data, batch_id=batch_id)
-                if config.falco_enabled:
-                    save_falco_data(falco_data=falco_found_extra_packages, batch_id=batch_id)
+                if(config.dgraph_enabled):
+                    save_sbom_data_to_dgraph(sbom_data=sbom_report, batch_id=batch_id,dgraph_creds={"host": config.dgraph_db_host, "port": config.dgraph_db_port})
+                    save_pyroscope_data_to_dgraph(pyroscope_data=pyroscope_data, batch_id=batch_id,dgraph_creds={"host": config.dgraph_db_host, "port": config.dgraph_db_port})
+                    if config.falco_enabled:
+                        save_falco_data_to_dgraph(falco_data=falco_found_extra_packages, batch_id=batch_id,dgraph_creds={"host": config.dgraph_db_host, "port": config.dgraph_db_port})
+                else:
+                    save_sbom_data(sbom_data=sbom_report, batch_id=batch_id)
+                    save_pyroscope_data(pyroscope_data=pyroscope_data, batch_id=batch_id)
+                    if config.falco_enabled:
+                        save_falco_data(falco_data=falco_found_extra_packages, batch_id=batch_id)
 
         else:
             scan_status = False
