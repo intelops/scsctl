@@ -50,6 +50,7 @@ def parse_logs_and_get_package_paths(falco_pod_name, target_deployment_name, nam
                 package_paths.append(log["output_fields"]["fd.name"])
         return list(set(package_paths)), True
     except Exception as e:
+        click.echo(f"Error parsing logs - {e}")
         return [], False
 
 

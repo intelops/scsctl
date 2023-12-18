@@ -21,8 +21,11 @@ from scsctl.helper.renovate import (check_if_node_and_npm_is_installed,check_if_
 
 import yaml
 
+from scsctl.helper.sqlite import get_cursor
+
 
 @click.group()
+
 def cli():
     pass
 
@@ -62,6 +65,7 @@ batch_id = f"scsctl_{current_datetime}"
 @click.option("--renovate_repo_token", help="Repo token for renovate", default=None, is_flag=False, flag_value=None)
 @click.option("--renovate_repo_name", help="Repo name for renovate", default=None, is_flag=False, flag_value=None)
 @click.option("--non_interactive", help="Run scsctl in non interactive mode", default= False, is_flag=True, flag_value=True)
+@click.option("--rebuild_image", help="Rebuild the image", default=False, is_flag=True, flag_value=True)
 @click.option(
     "--docker_file_folder_path", help="Path of the docker file to rebuild", default=None, is_flag=False, flag_value=None, multiple=True
 )
@@ -73,6 +77,7 @@ def scan(
     pyroscope_url=None,
     falco_pod_name=None,
     falco_target_deployment_name=None,
+    rebuild_image=False,
     docker_file_folder_path=None,
     db_enabled=False,
     falco_enabled=False,
@@ -115,6 +120,8 @@ def scan(
             db_hashicorp_vault_path = config_data.get("db_hashicorp_vault_path")
 
         # For flags, only set from config if not set from command line
+        if not rebuild_image:
+            rebuild_image = config_data.get("rebuild_image", False)
         if not db_enabled:
             db_enabled = config_data.get("db_enabled", False)
         if not falco_enabled:
@@ -152,6 +159,10 @@ def scan(
     )
 
     scan_status = True
+    renovate_status = ""
+    sbom_status = False
+    pyroscope_status = False
+    falco_status = False
     sbom_report, sbom_status = get_sbom_report(appDetails)
     if sbom_status:
         pyroscope_data, pyroscope_status = get_pyroscope_data(appDetails)
@@ -192,6 +203,11 @@ def scan(
                         if falco_enabled:
                             save_falco_data(falco_data=falco_found_extra_packages, batch_id=batch_id, vault_enabled=db_hashicorp_vault_enabled, creds={"url":db_hashicorp_vault_url,"token":db_hashicorp_vault_token,"path":db_hashicorp_vault_path})
 
+            if(rebuild_image):
+                if docker_file_folder_path == None:
+                    click.echo("Please provide docker file folder path to rebuild the image, exiting...")
+                modify_and_build_docker_images(file_paths=docker_file_folder_path,package_names=pyroscope_found_extra_packages,batch_id=batch_id)
+
         else:
             scan_status = False
             click.echo("\nError fetching data from pyroscope... Exiting")
@@ -205,15 +221,26 @@ def scan(
                 renovate_process = run_renovate_on_a_repository(token=renovate_repo_token,repo_name=renovate_repo_name)
                 if renovate_process.returncode == 0:
                     click.echo("Renovate bot ran successfully")
+                    renovate_status = "Renovate bot ran successfully"
                     return True
                 else:
                     click.echo("Error running renovate bot")
+                    renovate_status = "Error running renovate bot"
                     return False
             else:
+                renovate_status = "Renovate bot not installed, please install using `npm install -g renovate`"
                 return False
         else:
+            renovate_status = "Node or npm not installed, please install them to use scsctl with renovate"
             return False
         
+    #Save scan status to sqlite db
+    cursor, conn = get_cursor()
+
+    cursor.execute(f"INSERT INTO scsctl (batch_id,run_type,docker_image_name,pyroscope_app_name,pyroscope_url,db_enabled,hashicorp_vault_enabled,renovate_enabled,falco_enabled,renovate_status,falco_status,trivy_status,pyroscope_status,status) VALUES ('{batch_id}','cli','{docker_image_name}','{pyroscope_app_name}','{pyroscope_url}',{db_enabled},{db_hashicorp_vault_enabled},{renovate_enabled},{falco_enabled},'{renovate_status}',{falco_status},{sbom_status},{pyroscope_status},{scan_status})")
+
+    conn.commit()
+    conn.close()
 
     choices = [
         "Sbom report",

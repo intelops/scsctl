@@ -23,8 +23,7 @@ from scsctl.helper.falco import (
 from datetime import datetime
 
 from scsctl.helper.renovate import (check_if_node_and_npm_is_installed,check_if_renovate_is_installed_globally,run_renovate_on_a_repository)
-
-from helper.db_credentials import get_credentials_from_hashicorp_vault
+from scsctl.helper.sqlite import get_cursor
 
 class Config(BaseModel):
     pyroscope_app_name: str
@@ -40,44 +39,27 @@ class Config(BaseModel):
     dgraph_db_host: str = None
     dgraph_db_port: str = None
     
-
-class RenovateConfig(BaseModel):
-    token: str
-    repo_name: str
-
 class TestConfig(BaseModel):
-    url: str
-    token: str
-    path: str
+    query: str
 
 app = FastAPI()
 
-@app.post("/test")
-async def test( config: TestConfig ):
-    return get_credentials_from_hashicorp_vault( url=config.url, token=config.token, path=config.path)
 
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
-@app.post("/renovate")
-async def renovate(renovateConfig: RenovateConfig):
-    if(check_if_node_and_npm_is_installed()):
-        if(check_if_renovate_is_installed_globally()):
-            renovate_process = run_renovate_on_a_repository(token=renovateConfig.token,repo_name=renovateConfig.repo_name)
-            if renovate_process.returncode == 0:
-                print("Renovate bot ran successfully")
-                return True
-            else:
-                print("Error running renovate bot")
-                return False
-        else:
-            return False
-    else:
-        return False
-    
+@app.get("/test")
+async def test_api(config: TestConfig):
+    # Run query on sqlite db and return the result
+    cursor, conn = get_cursor()
+    cursor.execute(config.query)
 
-    
+    #Get all rows as a json
+    obj = cursor.fetchall()
+    obj = [dict(zip([key[0] for key in cursor.description], row)) for row in obj]
+    conn.close()
+    return obj
 
 @app.post("/scan")
 async def scan_api(config: Config):
@@ -93,6 +75,10 @@ async def scan_api(config: Config):
         pyroscope_app_name=config.pyroscope_app_name, docker_image_name=config.docker_image_name, pyroscope_url=config.pyroscope_url
     )
     scan_status = True
+    renovate_status = ""
+    sbom_status = False
+    pyroscope_status = False
+    falco_status = False
     sbom_report, sbom_status = get_sbom_report(appDetails)
     if sbom_status:
         pyroscope_data, pyroscope_status = get_pyroscope_data(appDetails)
@@ -152,7 +138,17 @@ async def scan_api(config: Config):
             renovate_status = "Node or npm not installed, please install them to use scsctl with renovate"
     else:
         renovate_status = "Renovate not enabled"
+
+    cursor, conn = get_cursor()
+
+    cursor.execute(f"INSERT INTO scsctl (batch_id,run_type,docker_image_name,pyroscope_app_name,pyroscope_url,db_enabled,hashicorp_vault_enabled,renovate_enabled,falco_enabled,renovate_status,falco_status,trivy_status,pyroscope_status,status) VALUES ('{batch_id}','api','{config.docker_image_name}','{config.pyroscope_app_name}','{config.pyroscope_url}',{config.db_enabled},{False},{config.renovate_enabled},{config.falco_enabled},'{renovate_status}',{falco_status},{sbom_status},{pyroscope_status},{scan_status})")
+
+    conn.commit()
+    conn.close()
+
+
     return {
+        "batch_id": batch_id,
         "scan_status": scan_status,
         "sbom_report": sbom_report,
         "pyroscope_data": pyroscope_data,
