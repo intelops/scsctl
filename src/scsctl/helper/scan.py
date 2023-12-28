@@ -25,7 +25,7 @@ from scsctl.helper.sqlite import get_cursor
 
 
 
-def run_scan(batch_id, pyroscope_app_name, docker_image_name, pyroscope_url, dgraph_enabled = False, dgraph_db_host = "", dgraph_db_port = "",renovate_enabled = False, falco_enabled = False,falco_pod_name = "",falco_target_deployment_name = "", db_enabled = False, renovate_repo_token = "", renovate_repo_name = ""):
+def run_scan(batch_id, pyroscope_app_name, docker_image_name, pyroscope_url, dgraph_enabled = False, dgraph_db_host = "", dgraph_db_port = "",renovate_enabled = False, falco_enabled = False,falco_pod_name = "",falco_target_deployment_name = "", db_enabled = False, renovate_repo_token = "", renovate_repo_name = "", docker_file_folder_path = ""):
     pyroscope_data = []
     pyroscope_found_extra_packages = []
     falco_found_extra_packages = []
@@ -107,6 +107,16 @@ def run_scan(batch_id, pyroscope_app_name, docker_image_name, pyroscope_url, dgr
     conn.commit()
     conn.close()
 
+    print({
+        "batch_id": batch_id,
+        "scan_status": scan_status,
+        "sbom_report": sbom_report,
+        "pyroscope_data": pyroscope_data,
+        "pyroscope_found_extra_packages": pyroscope_found_extra_packages,
+        "falco_found_extra_packages": falco_found_extra_packages,
+        "final_report": final_report,
+        "renovate_status" : renovate_status
+    })
 
     return {
         "batch_id": batch_id,
