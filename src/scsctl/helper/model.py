@@ -16,5 +16,14 @@ class ScanConfig(BaseModel):
     dgraph_db_host: str = Field(default=None)
     dgraph_db_port: str = Field(default=None)
 
-class ScheduleScanConfig(ScanConfig):
+class CreateScanConfig(ScanConfig):
     cron_schedule: str
+
+class DeleteScanConfig(BaseModel):
+    job_id: str
+
+class PauseScanConfig(BaseModel):
+    job_id: str
+
+class ResumeScanConfig(BaseModel):
+    job_id: str
