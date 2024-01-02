@@ -2,37 +2,25 @@ from datetime import datetime
 import click
 import questionary
 from scsctl.helper.falco import (
-    parse_logs_and_get_package_paths,
-    compare_and_find_extra_packages_using_falco,
     print_falco_packages,
-    save_falco_data,
-    save_falco_data_to_dgraph
 )
 from scsctl.helper.pyroscope import (
-    get_pyroscope_data,
     print_pyroscope_packages,
-    save_pyroscope_data,
-    compare_and_find_pyroscope_extra_packages,
-    save_pyroscope_data_to_dgraph
 )
-from scsctl.helper.common import AppDetails, generate_final_report, modify_and_build_docker_image,modify_and_build_docker_images, custom_style_fancy
-from scsctl.helper.trivy import get_sbom_report, print_sbom_report, save_sbom_data, save_sbom_data_to_dgraph
-from scsctl.helper.renovate import (check_if_node_and_npm_is_installed,check_if_renovate_is_installed_globally,run_renovate_on_a_repository)
+from scsctl.helper.common import AppDetails, modify_and_build_docker_images, custom_style_fancy
+from scsctl.helper.trivy import print_sbom_report
 
 import yaml
 
 from scsctl.helper.sqlite import get_cursor
+
+from scsctl.helper.scan import run_scan
 
 
 @click.group()
 
 def cli():
     pass
-
-
-current_datetime = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-batch_id = f"scsctl_{current_datetime}"
-
 
 @click.command()
 @click.option("--pyroscope_app_name", default=None, help="Name of the pyroscope app")
@@ -53,6 +41,7 @@ batch_id = f"scsctl_{current_datetime}"
     flag_value=None,
 )
 @click.option("--db_enabled", help="Enable db", default=False, is_flag=True, flag_value=True)
+@click.option("--pyroscope_enabled", help="Enable pyroscope", default=False, is_flag=True, flag_value=True)
 @click.option("--dgraph_enabled", help="Enable dgraph", default=False, is_flag=True, flag_value=True)
 @click.option("--dgraph_db_host", help="Host of the db", default="localhost", is_flag=False, flag_value=None)
 @click.option("--dgraph_db_port", help="Port of the db", default=9080, is_flag=False, flag_value=None)
@@ -86,6 +75,7 @@ def scan(
     renovate_enabled = False,
     renovate_repo_token = None,
     renovate_repo_name = None,
+    pyroscope_enabled = False,
     db_hashicorp_vault_enabled=False,
     db_hashicorp_vault_url=None,
     db_hashicorp_vault_token=None,
@@ -136,15 +126,17 @@ def scan(
             dgraph_db_host = config_data.get("dgraph_db_host", "localhost")
         if not dgraph_db_port:
             dgraph_db_port = config_data.get("dgraph_db_port", 9080)
+        if not pyroscope_enabled:
+            pyroscope_enabled = config_data.get("pyroscope_enabled", False)
 
         # Check mandatory fields
-        if pyroscope_app_name is None:
+        if pyroscope_enabled and pyroscope_app_name is None:
             raise ValueError("pyroscope_app_name is required, either via command line or config file")
 
         if docker_image_name is None:
             raise ValueError("docker_image_name is required, either via command line or config file")
 
-        if pyroscope_url is None:
+        if pyroscope_enabled and pyroscope_url is None:
             raise ValueError("pyroscope_url is required, either via command line or config file")
         if falco_enabled and (falco_pod_name is None or falco_target_deployment_name is None):
             raise ValueError(
@@ -154,93 +146,20 @@ def scan(
             raise ValueError("renovate_repo_token and renovate_repo_name are required, either via command line or config file if renovate is enabled")
 
     """This script will scan the docker image and find the unused packages"""
-    appDetails = AppDetails(
-        pyroscope_app_name=pyroscope_app_name, docker_image_name=docker_image_name, pyroscope_url=pyroscope_url
-    )
 
-    scan_status = True
-    renovate_status = ""
-    sbom_status = False
-    pyroscope_status = False
-    falco_status = False
-    sbom_report, sbom_status = get_sbom_report(appDetails)
-    if sbom_status:
-        pyroscope_data, pyroscope_status = get_pyroscope_data(appDetails)
-        if pyroscope_status:
-            pyroscope_found_extra_packages = compare_and_find_pyroscope_extra_packages(
-                pyroscope_package_names=pyroscope_data,
-                sbom_package_names=sbom_report,
-            )
-            if falco_enabled:
-                falco_package_paths, falco_status = parse_logs_and_get_package_paths(
-                    falco_pod_name=falco_pod_name, target_deployment_name=falco_target_deployment_name
-                )
-                if falco_status:
-                    falco_found_extra_packages = compare_and_find_extra_packages_using_falco(
-                        falco_package_paths, sbom_report
-                    )
-                final_report = generate_final_report(
-                    sbom_package_names=sbom_report,
-                    pyroscope_package_names=pyroscope_found_extra_packages,
-                    falco_found_extra_packages=falco_found_extra_packages,
-                )
-            else:
-                final_report = generate_final_report(
-                    sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages
-                )
-            if db_enabled:
-                if(dgraph_enabled):
-                    save_sbom_data_to_dgraph(sbom_data=sbom_report, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
-                    save_pyroscope_data_to_dgraph(pyroscope_data=pyroscope_data, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
-                    if falco_enabled:
-                        save_falco_data_to_dgraph(falco_data=falco_found_extra_packages, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
-                else:
-                    if(db_hashicorp_vault_enabled and (db_hashicorp_vault_url == "" or db_hashicorp_vault_token == "" or db_hashicorp_vault_path == "")):
-                        click.echo("Please provide db_hashicorp_vault_url, db_hashicorp_vault_token and db_hashicorp_vault_path to save data to db")
-                    else:
-                        save_sbom_data(sbom_data=sbom_report, batch_id=batch_id, vault_enabled=db_hashicorp_vault_enabled, creds={"url":db_hashicorp_vault_url,"token":db_hashicorp_vault_token,"path":db_hashicorp_vault_path})
-                        save_pyroscope_data(pyroscope_data=pyroscope_data, batch_id=batch_id, vault_enabled=db_hashicorp_vault_enabled, creds={"url":db_hashicorp_vault_url,"token":db_hashicorp_vault_token,"path":db_hashicorp_vault_path})
-                        if falco_enabled:
-                            save_falco_data(falco_data=falco_found_extra_packages, batch_id=batch_id, vault_enabled=db_hashicorp_vault_enabled, creds={"url":db_hashicorp_vault_url,"token":db_hashicorp_vault_token,"path":db_hashicorp_vault_path})
+    current_datetime = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    batch_id = f"scsctl_{current_datetime}"
 
-            if(rebuild_image):
-                if docker_file_folder_path == None:
-                    click.echo("Please provide docker file folder path to rebuild the image, exiting...")
-                modify_and_build_docker_images(file_paths=docker_file_folder_path,package_names=pyroscope_found_extra_packages,batch_id=batch_id)
 
-        else:
-            scan_status = False
-            click.echo("\nError fetching data from pyroscope... Exiting")
-    else:
-        scan_status = False
-        click.echo("\nError fetching data from sbom_report... Exiting")
+    result = run_scan(batch_id=batch_id, pyroscope_enabled = pyroscope_enabled, docker_image_name=docker_image_name,pyroscope_app_name=pyroscope_app_name,pyroscope_url=pyroscope_url,dgraph_enabled=dgraph_enabled,dgraph_db_host=dgraph_db_host,dgraph_db_port=dgraph_db_port,renovate_enabled=renovate_enabled,falco_enabled=falco_enabled,falco_pod_name=falco_pod_name,falco_target_deployment_name=falco_target_deployment_name,db_enabled=db_enabled,renovate_repo_token=renovate_repo_token,renovate_repo_name=renovate_repo_name,docker_file_folder_path=docker_file_folder_path,db_hashicorp_vault_enabled=db_hashicorp_vault_enabled,db_hashicorp_vault_url=db_hashicorp_vault_url,db_hashicorp_vault_token=db_hashicorp_vault_token,db_hashicorp_vault_path=db_hashicorp_vault_path,non_interactive=non_interactive,rebuild_image=rebuild_image)
 
-    if(renovate_enabled):
-        if(check_if_node_and_npm_is_installed()):
-            if(check_if_renovate_is_installed_globally()):
-                renovate_process = run_renovate_on_a_repository(token=renovate_repo_token,repo_name=renovate_repo_name)
-                if renovate_process.returncode == 0:
-                    click.echo("Renovate bot ran successfully")
-                    renovate_status = "Renovate bot ran successfully"
-                    return True
-                else:
-                    click.echo("Error running renovate bot")
-                    renovate_status = "Error running renovate bot"
-                    return False
-            else:
-                renovate_status = "Renovate bot not installed, please install using `npm install -g renovate`"
-                return False
-        else:
-            renovate_status = "Node or npm not installed, please install them to use scsctl with renovate"
-            return False
-        
-    #Save scan status to sqlite db
-    cursor, conn = get_cursor()
+    scan_status = result.get("scan_status")
+    sbom_report = result.get("sbom_report")
+    pyroscope_data = result.get("pyroscope_data")
+    pyroscope_found_extra_packages = result.get("pyroscope_found_extra_packages")
+    falco_found_extra_packages = result.get("falco_found_extra_packages")
+    final_report = result.get("final_report")
 
-    cursor.execute(f"INSERT INTO scsctl (batch_id,run_type,docker_image_name,pyroscope_app_name,pyroscope_url,db_enabled,hashicorp_vault_enabled,renovate_enabled,falco_enabled,renovate_status,falco_status,trivy_status,pyroscope_status,status) VALUES ('{batch_id}','cli','{docker_image_name}','{pyroscope_app_name}','{pyroscope_url}',{db_enabled},{db_hashicorp_vault_enabled},{renovate_enabled},{falco_enabled},'{renovate_status}',{falco_status},{sbom_status},{pyroscope_status},{scan_status})")
-
-    conn.commit()
-    conn.close()
 
     choices = [
         "Sbom report",

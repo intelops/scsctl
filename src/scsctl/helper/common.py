@@ -32,8 +32,8 @@ custom_style_fancy = Style(
 @dataclass
 class AppDetails:
     docker_image_name: str
-    pyroscope_app_name: str
-    pyroscope_url: str
+    pyroscope_app_name: str = None
+    pyroscope_url: str = None
 
 def modify_and_build_docker_images(file_paths: list, package_names: list, batch_id: str):
     counter = 0
@@ -108,7 +108,13 @@ def generate_final_report(sbom_package_names, pyroscope_package_names=[], falco_
     if "other" in pyroscope_package_names:
         pyroscope_package_names.remove("other")
 
+    #if pyroscope_package_names is empty then everything is extra packages
+
     extra_packages = list(set(pyroscope_package_names + falco_found_extra_packages))
+
+    if len(extra_packages) == 0:
+        extra_packages = sbom_package_names
+
     grouped_packages = {}
     for package in extra_packages:
         filtered_elements = {"VulnerabilityID": [], "Severity": {}}
