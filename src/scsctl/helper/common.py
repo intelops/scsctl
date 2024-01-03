@@ -6,6 +6,7 @@ import subprocess
 import shutil
 from tabulate import tabulate
 import json
+from scsctl.helper.model import Stats
 
 custom_style_fancy = Style(
     [
@@ -112,8 +113,9 @@ def generate_final_report(sbom_package_names, pyroscope_package_names=[], falco_
 
     extra_packages = list(set(pyroscope_package_names + falco_found_extra_packages))
 
-    if len(extra_packages) == 0:
-        extra_packages = sbom_package_names
+    # if len(extra_packages) == 0:
+    #Generating summary for all vulnerable packages
+    extra_packages = sbom_package_names
 
     grouped_packages = {}
     for package in extra_packages:
@@ -129,7 +131,22 @@ def generate_final_report(sbom_package_names, pyroscope_package_names=[], falco_
 
     headers = ["Package Names", "Vulnerability IDs", "Severities"]
     data = []
+    stats = Stats(vulnerable_packages_count=len(grouped_packages))
     for item in grouped_packages:
+        severity = grouped_packages[item]["Severity"]
+        for key in severity:
+            if key == "CRITICAL":
+                stats.severity_critical_count += severity[key]
+            elif key == "HIGH":
+                stats.severity_high_count += severity[key]
+            elif key == "MEDIUM":
+                stats.severity_medium_count += severity[key]
+            elif key == "LOW":
+                stats.severity_low_count += severity[key]
+            else:
+                stats.severity_unknown_count += severity[key]
+        stats.vulnerablitites_count += len(grouped_packages[item]["VulnerabilityID"])
+        
         if(is_api):
             data.append({"package_names": item, "vulnerability_ids": grouped_packages[item]["VulnerabilityID"], "severities": [f"{k} - {v}" for k, v in grouped_packages[item]["Severity"].items()]})
             continue
@@ -145,7 +162,7 @@ def generate_final_report(sbom_package_names, pyroscope_package_names=[], falco_
 
     
     if(is_api):
-        return data
+        return data, stats
 
     table = tabulate(data, headers=headers, tablefmt="grid")
-    return table
+    return table , stats

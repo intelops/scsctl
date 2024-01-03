@@ -21,22 +21,29 @@ from scsctl.helper.falco import (
     compare_and_find_extra_packages_using_falco
 )
 
-from scsctl.helper.sqlite import get_cursor
+from scsctl.helper.model import ScanStatus, Stats, Executions, ExecutionJobs
+from sqlalchemy.orm import Session
+from scsctl.helper.database import get_db
+from datetime import datetime
+
+import uuid
 
 
-def save_status_to_db(batch_id, docker_image_name,pyroscope_app_name = None, pyroscope_url = None, renovate_enabled = False, falco_enabled = False, db_enabled = False, renovate_status = "", sbom_status = False, pyroscope_status = False, falco_status = False, scan_status = False):
-    cursor, conn = get_cursor()
+# def save_status_to_db(batch_id, docker_image_name,pyroscope_app_name = None, pyroscope_url = None, renovate_enabled = False, falco_enabled = False, db_enabled = False, renovate_status = "", sbom_status = False, pyroscope_status = False, falco_status = False, scan_status = False):
+#     cursor, conn = get_cursor()
 
-    cursor.execute(f"INSERT INTO scsctl (batch_id,run_type,docker_image_name,pyroscope_app_name,pyroscope_url,db_enabled,hashicorp_vault_enabled,renovate_enabled,falco_enabled,renovate_status,falco_status,trivy_status,pyroscope_status,status) VALUES ('{batch_id}','api','{docker_image_name}','{pyroscope_app_name}','{pyroscope_url}',{db_enabled},{False},{renovate_enabled},{falco_enabled},'{renovate_status}',{falco_status},{sbom_status},{pyroscope_status},{scan_status})")
+#     cursor.execute(f"INSERT INTO scsctl (batch_id,run_type,docker_image_name,pyroscope_app_name,pyroscope_url,db_enabled,hashicorp_vault_enabled,renovate_enabled,falco_enabled,renovate_status,falco_status,trivy_status,pyroscope_status,status) VALUES ('{batch_id}','api','{docker_image_name}','{pyroscope_app_name}','{pyroscope_url}',{db_enabled},{False},{renovate_enabled},{falco_enabled},'{renovate_status}',{falco_status},{sbom_status},{pyroscope_status},{scan_status})")
 
-    conn.commit()
-    conn.close()
+#     conn.commit()
+#     conn.close()
 
-def run_scan(batch_id, docker_image_name,pyroscope_enabled = False,pyroscope_app_name = None, pyroscope_url = None, dgraph_enabled = False, dgraph_db_host = "", dgraph_db_port = "",renovate_enabled = False, falco_enabled = False,falco_pod_name = "",falco_target_deployment_name = "", db_enabled = False, renovate_repo_token = "", renovate_repo_name = "", docker_file_folder_path = "", **kwargs):
+def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyroscope_app_name = None, pyroscope_url = None, dgraph_enabled = False, dgraph_db_host = "", dgraph_db_port = "",renovate_enabled = False, falco_enabled = False,falco_pod_name = "",falco_target_deployment_name = "", db_enabled = False, renovate_repo_token = "", renovate_repo_name = "", docker_file_folder_path = "",is_api = False, **kwargs):
+    execution_id = kwargs.get("execution_id", None)
+    if(batch_id == None):
+        current_datetime = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+        batch_id = f"scsctl_{str(uuid.uuid4())}_{current_datetime}"
     #check if kwargs have job_id and store it in a variable
     job_id = kwargs.get("job_id", None)
-    is_scheduled = kwargs.get("is_scheduled", False)
-    print(job_id)
     pyroscope_data = []
     pyroscope_found_extra_packages = []
     falco_found_extra_packages = []
@@ -51,6 +58,7 @@ def run_scan(batch_id, docker_image_name,pyroscope_enabled = False,pyroscope_app
     sbom_status = False
     pyroscope_status = False
     falco_status = False
+    stats = Stats()
     sbom_report, sbom_status = get_sbom_report(appDetails)
     if sbom_status:
         if(pyroscope_enabled):
@@ -63,9 +71,8 @@ def run_scan(batch_id, docker_image_name,pyroscope_enabled = False,pyroscope_app
                 )
             else:
                 scan_status = False
-                print("\nError fetching data from pyroscope... Exiting")
-                save_status_to_db(batch_id=batch_id, docker_image_name=docker_image_name,pyroscope_app_name = pyroscope_app_name, pyroscope_url = pyroscope_url, renovate_enabled = renovate_enabled, falco_enabled = falco_enabled, db_enabled = db_enabled, renovate_status = renovate_status, sbom_status = sbom_status, pyroscope_status = pyroscope_status, falco_status = falco_status, scan_status = scan_status)
-
+                print("\nError fetching data from pyroscope... Exiting")        
+                #TODO: Save status to postgres db
                 return {
                     "batch_id": batch_id,
                     "scan_status": scan_status,
@@ -74,6 +81,7 @@ def run_scan(batch_id, docker_image_name,pyroscope_enabled = False,pyroscope_app
                     "pyroscope_found_extra_packages": pyroscope_found_extra_packages,
                     "falco_found_extra_packages": falco_found_extra_packages,
                     "final_report": final_report,
+                    "stats": stats.model_dump(),
                     "renovate_status" : renovate_status
                 }
         else:
@@ -85,14 +93,15 @@ def run_scan(batch_id, docker_image_name,pyroscope_enabled = False,pyroscope_app
                     falco_found_extra_packages = compare_and_find_extra_packages_using_falco(
                         falco_package_paths, sbom_report
                     )
-                final_report = generate_final_report(
+                final_report, stats = generate_final_report(
                     sbom_package_names=sbom_report,
                     pyroscope_package_names=pyroscope_found_extra_packages,
-                    falco_found_extra_packages=falco_found_extra_packages
+                    falco_found_extra_packages=falco_found_extra_packages,
+                    is_api = is_api
                 )
             else:
-                final_report = generate_final_report(
-                    sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages, is_api = True
+                final_report, stats = generate_final_report(
+                    sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages, is_api = is_api
                 )
             if db_enabled:
                 if(dgraph_enabled):
@@ -126,18 +135,44 @@ def run_scan(batch_id, docker_image_name,pyroscope_enabled = False,pyroscope_app
     else:
         renovate_status = "Renovate not enabled"
 
-    save_status_to_db(batch_id=batch_id, docker_image_name=docker_image_name,pyroscope_app_name = pyroscope_app_name, pyroscope_url = pyroscope_url, renovate_enabled = renovate_enabled, falco_enabled = falco_enabled, db_enabled = db_enabled, renovate_status = renovate_status, sbom_status = sbom_status, pyroscope_status = pyroscope_status, falco_status = falco_status, scan_status = scan_status)
+    if(is_api):
+        #If call is from api server then save status to db
+        generator = get_db()
+        db = next(generator)
+        scan = ScanStatus(
+                job_id=job_id,
+                execution_id=execution_id,
+                batch_id=batch_id,
+                run_type="api",
+                **stats.model_dump(),
+                status=scan_status
+            )
+        db.add(scan)
+        db.commit()
+        db.refresh(scan)
 
-    # print({
-    #     "batch_id": batch_id,
-    #     "scan_status": scan_status,
-    #     "sbom_report": sbom_report,
-    #     "pyroscope_data": pyroscope_data,
-    #     "pyroscope_found_extra_packages": pyroscope_found_extra_packages,
-    #     "falco_found_extra_packages": falco_found_extra_packages,
-    #     "final_report": final_report,
-    #     "renovate_status" : renovate_status
-    # })
+
+        #Get scan status for all jobs for execution_id and check if job has vulnerable_packages_count greater than 0. If yes count that. This count is the count of vulnerable_images_count in executions table.
+        #get job ids for execution_id
+        job_ids = db.query(ExecutionJobs.job_id).filter(ExecutionJobs.execution_id == execution_id).all()
+        # Get vulnerable_packages_count for all each job_id with latest datetime
+        vulnerable_images_count = 0
+        vulnerabilities_count = 0
+        scan_status_temp = True
+        for job_id in job_ids:
+            counts = db.query(ScanStatus.vulnerablitites_count,ScanStatus.status).filter(ScanStatus.job_id == job_id[0]).order_by(ScanStatus.datetime.desc()).first()
+            if(counts and counts[0] > 0):
+                vulnerable_images_count += 1
+            if(counts):
+                vulnerabilities_count += counts[0]
+            if(counts and counts[1] == False):
+                scan_status_temp = False
+
+        #Update the vulnerabilities_count in executions table
+        db.query(Executions).filter(Executions.execution_id == execution_id).update({"vulnerablities_count": vulnerabilities_count, "vulnerable_images_count": vulnerable_images_count, "status": scan_status_temp})
+
+        db.commit()
+        db.close()
 
     return {
         "batch_id": batch_id,
@@ -147,5 +182,6 @@ def run_scan(batch_id, docker_image_name,pyroscope_enabled = False,pyroscope_app
         "pyroscope_found_extra_packages": pyroscope_found_extra_packages,
         "falco_found_extra_packages": falco_found_extra_packages,
         "final_report": final_report,
+        "stats": stats.model_dump(),
         "renovate_status" : renovate_status
     }
