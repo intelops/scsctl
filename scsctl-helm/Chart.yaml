@@ -1,0 +1,7 @@
+apiVersion: v2
+name: scsctl-helm
+description: Helm chart for scsctl
+
+type: application
+version: 0.0.1
+appVersion: "latest"

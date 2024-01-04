@@ -1,33 +1,34 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from scsctl.helper.database import Base
 from sqlalchemy import Column, Integer, String, DateTime, PrimaryKeyConstraint, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime
 from enum import Enum
+from typing import Optional
 
 class ScanConfig(BaseModel):
     docker_image_name: str
-    pyroscope_url: str = Field(default=None)
-    pyroscope_app_name: str = Field(default=None)
-    falco_pod_name: str = Field(default=None)
-    falco_target_deployment_name: str = Field(default=None)
-    docker_file_folder_path: str = Field(default=None)
-    db_enabled: bool = Field(default=False)
-    falco_enabled: bool = Field(default=False)
-    renovate_enabled: bool = Field(default=False)
-    renovate_repo_name: str = Field(default=None)
-    renovate_repo_token: str = Field(default=None)
-    dgraph_enabled: bool = Field(default=False)
-    dgraph_db_host: str = Field(default=None)
-    dgraph_db_port: str = Field(default=None)
+    pyroscope_url: Optional[str] = Field(default=None)
+    pyroscope_app_name: Optional[str] = Field(default=None)
+    falco_pod_name: Optional[str] = Field(default=None)
+    falco_target_deployment_name: Optional[str] = Field(default=None)
+    docker_file_folder_path: Optional[str] = Field(default=None)
+    db_enabled: Optional[bool] = Field(default=False)
+    falco_enabled: Optional[bool] = Field(default=False)
+    renovate_enabled: Optional[bool] = Field(default=False)
+    renovate_repo_name: Optional[str] = Field(default=None)
+    renovate_repo_token: Optional[str] = Field(default=None)
+    dgraph_enabled: Optional[bool] = Field(default=False)
+    dgraph_db_host: Optional[str] = Field(default=None)
+    dgraph_db_port: Optional[str] = Field(default=None)
 
 class CreateScheduleConfig(BaseModel):
     schedule_name: str
     container_registry_id: str
     cron_schedule: str
-    start_date: datetime = Field(default=None)
-    end_date: datetime = Field(default=None)
+    start_date: Optional[datetime] = Field(default=None)
+    end_date: Optional[datetime] = Field(default=None)
     scan_configs: list[ScanConfig]
 
 class DeleteScheduleConfig(BaseModel):
@@ -119,16 +120,38 @@ class ScheduleEnum(Enum):
     SCHEDULE_DELETE_FAILED = "Error deleting schedule"
     SCHEDULE_NOT_FOUND = "Schedule not found"
 
+class CreateDeleteUpdateScheduleResponse(BaseModel):
+    message: str
+    schedule_id: str
 
-# stats = {
-#         "vulnerable_packages_count": len(grouped_packages),
-#         "vulnerablitites_count": 0,
-#         "severity_critical_count": 0,
-#         "severity_high_count": 0,
-#         "severity_medium_count": 0,
-#         "severity_low_count": 0,
-#         "severity_unknown_count": 0
-#     }
+    @validator('*', pre=True, always=True)
+    def convert_to_string(cls, v):
+        return str(v)
+    
+class ScheduleResponse(BaseModel):
+    
+    @validator('*', pre=True, always=True)
+    def convert_to_string(cls, v):
+        return str(v)
+    
+    schedule_id: str
+    schedule_name: str
+
+
+class ExecutionResponse(BaseModel):
+    execution_id: str
+    start_time: datetime
+    end_time: datetime
+    scan_images_count: int
+    vulnerable_images_count: int
+    vulnerablities_count: int
+    status: str
+    scan_report: dict
+
+class ScheduleDetailsResponse(BaseModel):
+    schedule_id: str
+    schedule_name: str
+    executions: list[ExecutionResponse]
 
 class Stats(BaseModel):
     vulnerable_packages_count: int = Field(default=0)

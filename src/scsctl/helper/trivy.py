@@ -22,9 +22,13 @@ def install_trivy():
 
 def get_sbom_report(app_details: AppDetails):
     # Check if Trivy is installed
+    docker_trivy_installed = False
     try:
-        # result = subprocess.run("/usr/local/bin/trivy --version", capture_output=True, shell=True)
-        result = subprocess.run("$HOME/.local/bin/trivy --version", capture_output=True, shell=True)
+        result = subprocess.run("/usr/local/bin/trivy --version", capture_output=True, shell=True)
+        if result.returncode == 0:
+            docker_trivy_installed = True
+        else:
+            result = subprocess.run("$HOME/.local/bin/trivy --version", capture_output=True, shell=True)
         if result.returncode != 0:
             click.echo("\nTrivy is not installed. Installing Trivy...")
             install_trivy()
@@ -33,8 +37,10 @@ def get_sbom_report(app_details: AppDetails):
         return
 
     # Trivy is installed, proceed with the scan
-    # cmd = f"/usr/local/bin/trivy image {app_details.docker_image_name} --cache-dir /tmp/.cache --format json"
-    cmd = f"$HOME/.local/bin/trivy image {app_details.docker_image_name} --cache-dir /tmp/.cache --format json"
+    if docker_trivy_installed:
+        cmd = f"/usr/local/bin/trivy image {app_details.docker_image_name} --cache-dir /tmp/.cache --format json"
+    else:
+        cmd = f"$HOME/.local/bin/trivy image {app_details.docker_image_name} --cache-dir /tmp/.cache --format json"
     try:
         click.echo(f"Running Trivy scan")
         result = subprocess.run(cmd, capture_output=True, shell=True, check=True)

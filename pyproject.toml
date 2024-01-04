@@ -8,7 +8,7 @@ version = "0.0.4"
 authors = [{name="Jegath S", email="jegath@intelops.dev" }]
 description = "Tool for automating Vulnerability Risk Management and Software Supply Chain Security Measures"
 readme = "README.md"
-dependencies = ['click==8.1.3', 'clickhouse-driver==0.2.6', 'numpy==1.25.0', 'requests==2.31.0','questionary==1.10.0','tabulate==0.9.0','hvac==1.2.1','fastapi==0.103.1','uvicorn==0.23.2','kubernetes==27.2.0','pydgraph==23.0.2', 'APScheduler==3.10.4']
+dependencies = ['click==8.1.3', 'clickhouse-driver==0.2.6', 'numpy==1.25.0', 'requests==2.31.0','questionary==1.10.0','tabulate==0.9.0','hvac==1.2.1','fastapi==0.103.1','uvicorn==0.23.2','kubernetes==27.2.0','pydgraph==23.0.2', 'APScheduler==3.10.4','SQLAlchemy==2.0.24','psycopg2-binary==2.9.9']
 requires-python = ">=3.9"
 
 [project.scripts]

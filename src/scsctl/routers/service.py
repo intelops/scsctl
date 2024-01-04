@@ -1,7 +1,7 @@
 
 from uuid import uuid4
 from sqlalchemy.orm import Session
-from scsctl.helper.model import CreateScheduleConfig, Schedules, ScanConfigs, Executions, ExecutionJobs
+from scsctl.helper.model import CreateScheduleConfig, Schedules, ScanConfigs, Executions, ExecutionJobs, ScanStatus
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from scsctl.helper.model import ScheduleEnum
@@ -40,7 +40,7 @@ def create_new_schedule(config: CreateScheduleConfig, db: Session, scheduler: Ba
             scan_config["schedule_id"] = schedule_id
             scan_config["job_id"] = job_id
             db.add(ScanConfigs(**scan_config))
-            db.commit()
+            # db.commit()
 
             # Add job to scheduler
             kwargs = {
@@ -53,7 +53,7 @@ def create_new_schedule(config: CreateScheduleConfig, db: Session, scheduler: Ba
 
             #Add job to execution_jobs
             db.add(ExecutionJobs(execution_id=execution_id, job_id=job_id))
-            db.commit()
+        db.commit()
         return ScheduleEnum.SCHEDULE_CREATED, schedule_id
     except Exception as e:
         print(e)
@@ -72,16 +72,20 @@ def delete_schedule(schedule_id: str, db: Session, scheduler: BackgroundSchedule
         for execution_job in execution_jobs:
             scheduler.remove_job(str(execution_job.job_id))
         db.query(ExecutionJobs).filter(ExecutionJobs.execution_id == execution_id).delete()
-        db.commit()
+        # db.commit()
 
         #Delete scan configs
         db.query(ScanConfigs).filter(ScanConfigs.schedule_id == schedule_id).delete()
-        db.commit()
+        # db.commit()
 
+
+        #Delete scan status
+        db.query(ScanStatus).filter(ScanStatus.execution_id == execution_id).delete()
+        # db.commit()
 
         #Delete execution
         db.query(Executions).filter(Executions.schedule_id == schedule_id).delete()
-        db.commit()
+        # db.commit()
 
         #Delete schedule
         db.query(Schedules).filter(Schedules.schedule_id == schedule_id).delete()
