@@ -43,7 +43,7 @@ async def scan_api(config: ScanConfig):
     
 if __name__ == "__main__":
     # #check environment and run uvicorn accordingly
-    if os.getenv("ENVIRONMENT","dev") == "prod":
+    if os.getenv("SCSCTL_ENVIRONMENT","dev") == "prod":
         uvicorn.run("server:app", host="0.0.0.0",port=5000, log_level="info", workers=2)
     else:
         uvicorn.run("server:app", host="0.0.0.0",port=5000, log_level="debug", reload=True)

@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "scsctl-helm.fullname" . }}
+  name: {{ include "scsctl.fullname" . }}
   labels:
-    {{- include "scsctl-helm.labels" . | nindent 4 }}
+    {{- include "scsctl.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "scsctl-helm.selectorLabels" . | nindent 6 }}
+      {{- include "scsctl.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,13 +18,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "scsctl-helm.selectorLabels" . | nindent 8 }}
+        {{- include "scsctl.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "scsctl-helm.serviceAccountName" . }}
+      serviceAccountName: {{ include "scsctl.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -37,6 +37,20 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          env:
+            - name: SCSCTL_PG_HOST
+              value: "{{ .Values.env.SCSCTL_PG_HOST }}"
+            - name: SCSCTL_PG_PORT
+              value: "{{ .Values.env.SCSCTL_PG_PORT }}"
+            - name: SCSCTL_PG_USER
+              value: "{{ .Values.env.SCSCTL_PG_USER }}"
+            - name: SCSCTL_PG_PASSWORD
+              value: "{{ .Values.env.SCSCTL_PG_PASSWORD }}"
+            - name: SCSCTL_PG_DATABASE
+              value: "{{ .Values.env.SCSCTL_PG_DATABASE }}"
+            - name: SCSCTL_ENVIRONMENT
+              value: "{{ .Values.env.SCSCTL_ENVIRONMENT }}"
+            
           livenessProbe:
             httpGet:
               path: /
