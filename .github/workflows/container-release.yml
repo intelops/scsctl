@@ -1,4 +1,4 @@
-name: container-release
+name: scsctl container image release
 on:
   push:
     tags:
