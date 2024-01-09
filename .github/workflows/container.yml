@@ -1,4 +1,4 @@
-name: Container Agent Docker Image CI
+name: Container Docker Image CI
 
 on:
   push:

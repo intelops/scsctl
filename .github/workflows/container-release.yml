@@ -41,7 +41,7 @@ jobs:
         uses: sigstore/cosign-installer@main
       - name: Sign the images
         run: |
-          cosign sign -y ${{ env.REGISTRY }}/${{ github.repository }}/container-release:${{ env.RELEASE_VERSION }}
+          cosign sign -y ${{ env.REGISTRY }}/${{ github.repository }}:${{ env.RELEASE_VERSION }}
         env:
           COSIGN_EXPERIMENTAL: 1
       - name: Verify the pushed tags
