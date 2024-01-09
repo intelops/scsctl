@@ -1,4 +1,4 @@
-name: Container  Docker Image CI
+name: scsctl Container image build for PR 
 
 on:
   pull_request:
