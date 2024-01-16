@@ -1,7 +1,7 @@
 FROM python:3.10-slim as build
 
 RUN apt-get update
-RUN apt-get install -y --no-install-recommends build-essential gcc 
+RUN apt-get install -y --no-install-recommends build-essential gcc
 
 WORKDIR /usr/app
 
@@ -11,8 +11,11 @@ RUN apt-get install -y ca-certificates curl gnupg
 RUN mkdir -p /etc/apt/keyrings
 RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
 RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
-RUN apt-get update -y
-RUN apt-get install nodejs -y
+
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y nodejs \
+    npm
+# RUN apt-get install nodejs -y
 
 RUN npm install -g renovate -y
 
@@ -36,6 +39,9 @@ WORKDIR /usr/app
 COPY --chown=python:python --from=build /usr/app/venv ./venv
 COPY --chown=python:python . .
 
+RUN apt-get -y update; apt-get -y install curl
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
 
 USER 999
 
@@ -50,10 +56,11 @@ RUN python -m build
 #Find the wheel file name and install the wheel
 RUN pip install $(find dist -name "*.whl")
 
+# RUN apt-get -y update; apt-get -y install curl
+
+
 EXPOSE 5000
 
 RUN chmod 755 ./run.sh
 
 ENTRYPOINT ["./run.sh"]
-
-# CMD ["python", "./src/scsctl/server.py"]
