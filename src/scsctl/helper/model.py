@@ -22,6 +22,7 @@ class ScanConfig(BaseModel):
     dgraph_enabled: Optional[bool] = Field(default=False)
     dgraph_db_host: Optional[str] = Field(default=None)
     dgraph_db_port: Optional[str] = Field(default=None)
+    pyroscope_enabled: Optional[bool] = Field(default=False)
 
 class CreateScheduleConfig(BaseModel):
     schedule_name: str

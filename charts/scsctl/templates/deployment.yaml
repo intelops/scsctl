@@ -37,6 +37,8 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          args:
+            - server
           env:
             - name: SCSCTL_PG_HOST
               value: "{{ .Values.env.SCSCTL_PG_HOST }}"
@@ -50,14 +52,14 @@ spec:
               value: "{{ .Values.env.SCSCTL_PG_DATABASE }}"
             - name: SCSCTL_ENVIRONMENT
               value: "{{ .Values.env.SCSCTL_ENVIRONMENT }}"
-            
+
           livenessProbe:
             httpGet:
-              path: /
+              path: /healthz
               port: http
           readinessProbe:
             httpGet:
-              path: /
+              path: /ready
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

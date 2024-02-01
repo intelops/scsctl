@@ -1,6 +1,6 @@
 
 from scsctl.helper.renovate import (check_if_node_and_npm_is_installed,check_if_renovate_is_installed_globally,run_renovate_on_a_repository)
-
+import json
 from scsctl.helper.pyroscope import (
     get_pyroscope_data,
     save_pyroscope_data,
@@ -27,6 +27,10 @@ from scsctl.helper.database import get_db
 from datetime import datetime
 
 import uuid
+
+import logging
+logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+logger = logging.getLogger(__name__)
 
 
 # def save_status_to_db(batch_id, docker_image_name,pyroscope_app_name = None, pyroscope_url = None, renovate_enabled = False, falco_enabled = False, db_enabled = False, renovate_status = "", sbom_status = False, pyroscope_status = False, falco_status = False, scan_status = False):
@@ -69,9 +73,38 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
                     pyroscope_package_names=pyroscope_data,
                     sbom_package_names=sbom_report,
                 )
+                if falco_enabled:
+                    falco_package_paths, falco_status = parse_logs_and_get_package_paths(
+                        falco_pod_name=falco_pod_name, target_deployment_name=falco_target_deployment_name
+                    )
+                    if falco_status:
+                        falco_found_extra_packages = compare_and_find_extra_packages_using_falco(
+                            falco_package_paths, sbom_report
+                        )
+                    final_report, stats = generate_final_report(
+                        sbom_package_names=sbom_report,
+                        pyroscope_package_names=pyroscope_found_extra_packages,
+                        falco_found_extra_packages=falco_found_extra_packages,
+                        is_api = is_api
+                    )
+                else:
+                    final_report, stats = generate_final_report(
+                        sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages, is_api = is_api
+                    )
+                if db_enabled:
+                    if(dgraph_enabled):
+                        save_sbom_data_to_dgraph(sbom_data=sbom_report, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
+                        save_pyroscope_data_to_dgraph(pyroscope_data=pyroscope_data, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
+                        if falco_enabled:
+                            save_falco_data_to_dgraph(falco_data=falco_found_extra_packages, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
+                    else:
+                        save_sbom_data(sbom_data=sbom_report, batch_id=batch_id)
+                        save_pyroscope_data(pyroscope_data=pyroscope_data, batch_id=batch_id)
+                        if falco_enabled:
+                            save_falco_data(falco_data=falco_found_extra_packages, batch_id=batch_id)
             else:
                 scan_status = False
-                print("\nError fetching data from pyroscope... Exiting")        
+                logger.error("\nError fetching data from pyroscope... Exiting")        
                 #TODO: Save status to postgres db
                 return {
                     "batch_id": batch_id,
@@ -117,7 +150,7 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
 
     else:
         scan_status = False
-        print("\nError fetching data from sbom_report... Exiting")
+        logger.error("\nError fetching data from sbom_report... Exiting")
 
     renovate_status = "Error"
     if(renovate_enabled):
@@ -135,7 +168,7 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
     else:
         renovate_status = "Renovate not enabled"
 
-    if(is_api):
+    if(is_api and False):
         #If call is from api server then save status to db
         generator = get_db()
         db = next(generator)

@@ -151,7 +151,7 @@ def scan(
     batch_id = f"scsctl_{current_datetime}"
 
 
-    result = run_scan(batch_id=batch_id, pyroscope_enabled = pyroscope_enabled, docker_image_name=docker_image_name,pyroscope_app_name=pyroscope_app_name,pyroscope_url=pyroscope_url,dgraph_enabled=dgraph_enabled,dgraph_db_host=dgraph_db_host,dgraph_db_port=dgraph_db_port,renovate_enabled=renovate_enabled,falco_enabled=falco_enabled,falco_pod_name=falco_pod_name,falco_target_deployment_name=falco_target_deployment_name,db_enabled=db_enabled,renovate_repo_token=renovate_repo_token,renovate_repo_name=renovate_repo_name,docker_file_folder_path=docker_file_folder_path,db_hashicorp_vault_enabled=db_hashicorp_vault_enabled,db_hashicorp_vault_url=db_hashicorp_vault_url,db_hashicorp_vault_token=db_hashicorp_vault_token,db_hashicorp_vault_path=db_hashicorp_vault_path,non_interactive=non_interactive,rebuild_image=rebuild_image)
+    result = run_scan(batch_id=batch_id, pyroscope_enabled = pyroscope_enabled, docker_image_name=docker_image_name,pyroscope_app_name=pyroscope_app_name,pyroscope_url=pyroscope_url,dgraph_enabled=dgraph_enabled,dgraph_db_host=dgraph_db_host,dgraph_db_port=dgraph_db_port,renovate_enabled=renovate_enabled,falco_enabled=falco_enabled,falco_pod_name=falco_pod_name,falco_target_deployment_name=falco_target_deployment_name,db_enabled=db_enabled,renovate_repo_token=renovate_repo_token,renovate_repo_name=renovate_repo_name,docker_file_folder_path=docker_file_folder_path,db_hashicorp_vault_enabled=db_hashicorp_vault_enabled,db_hashicorp_vault_url=db_hashicorp_vault_url,db_hashicorp_vault_token=db_hashicorp_vault_token,db_hashicorp_vault_path=db_hashicorp_vault_path,non_interactive=non_interactive,rebuild_image=rebuild_image, is_api=True)
 
     scan_status = result.get("scan_status")
     sbom_report = result.get("sbom_report")
@@ -175,19 +175,24 @@ def scan(
 
     if scan_status:
         if(non_interactive):
-            click.echo("Sbom report")
-            click.echo("===========")
-            print_sbom_report(sbom_report = sbom_report,is_non_interactive = True)
-            click.echo("Pyroscope detected packages")
-            click.echo("===========================")
-            print_pyroscope_packages(pyroscope_package_names = pyroscope_data,is_non_interactive = True)
-            if falco_enabled:
-                click.echo("Falco detected packages")
-                click.echo("=======================")
-                print_falco_packages(falco_package_names = falco_found_extra_packages,is_non_interactive = True)
-            click.echo("Final Report")
-            click.echo("=============")
-            click.echo(final_report)
+            click.echo({
+                "sbom_report": result.get("sbom_report"),
+                "pyroscope_data" :result.get("pyroscope_data"),
+                "final_report" : result.get("final_report")
+            })
+            # click.echo("Sbom report")
+            # click.echo("===========")
+            # print_sbom_report(sbom_report = sbom_report,is_non_interactive = True)
+            # click.echo("Pyroscope detected packages")
+            # click.echo("===========================")
+            # print_pyroscope_packages(pyroscope_package_names = pyroscope_data,is_non_interactive = True)
+            # if falco_enabled:
+            #     click.echo("Falco detected packages")
+            #     click.echo("=======================")
+            #     print_falco_packages(falco_package_names = falco_found_extra_packages,is_non_interactive = True)
+            # click.echo("Final Report")
+            # click.echo("=============")
+            # click.echo(final_report)
         else:
             while True:
                 choice = questionary.select("Select an option", choices=choices, style=custom_style_fancy).ask()

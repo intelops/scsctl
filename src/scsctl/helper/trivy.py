@@ -8,6 +8,10 @@ import questionary
 from datetime import datetime
 from scsctl.helper.dgraph import connect_local
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 def install_trivy():
     try:
         subprocess.run(
@@ -42,7 +46,7 @@ def get_sbom_report(app_details: AppDetails):
     else:
         cmd = f"$HOME/.local/bin/trivy image {app_details.docker_image_name} --cache-dir /tmp/.cache --format json"
     try:
-        click.echo(f"Running Trivy scan")
+        logger.info(f"Running Trivy scan")
         result = subprocess.run(cmd, capture_output=True, shell=True, check=True)
         json_output = result.stdout.decode("utf-8")
         return json_output, True
@@ -56,7 +60,8 @@ def get_sbom_report(app_details: AppDetails):
 def print_sbom_report(sbom_report,is_non_interactive=False):
     sbom_report = json.loads(sbom_report)
     sbom_report = sbom_report["Results"]
-    sbom_report = [item["Vulnerabilities"] for item in sbom_report if item["Class"] != "lang-pkgs"][0]
+    sbom_report = [item["Vulnerabilities"] for item in sbom_report][0]
+    # sbom_report = [item["Vulnerabilities"] for item in sbom_report if item["Class"] != "lang-pkgs"][0]
 
     chunk_size = 200
     index = 0

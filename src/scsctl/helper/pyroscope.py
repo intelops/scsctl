@@ -8,12 +8,16 @@ from scsctl.helper.common import AppDetails
 from scsctl.helper.clickhouse import connect_to_db
 from scsctl.helper.dgraph import connect_local
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def get_pyroscope_data(app_details: AppDetails):
     # url = f"http://localhost:4040/render?query={pyroscope_app_name}.cpu&from=now-1h&until=now&format=json"
-    click.echo(f"Fetching data from pyroscope for {app_details.pyroscope_app_name}...")
+    logger.info(f"Fetching data from pyroscope for {app_details.pyroscope_app_name}...")
     url = f"{app_details.pyroscope_url}/render?query={app_details.pyroscope_app_name}.cpu&from=now-1h&until=now&format=json"
-    print(url)
+    logger.info(url)
     try:
         response = requests.get(url)
     except Exception as e:
@@ -64,11 +68,12 @@ def print_pyroscope_packages(pyroscope_package_names,is_non_interactive = False)
 
 
 def compare_and_find_pyroscope_extra_packages(pyroscope_package_names, sbom_package_names):
-    click.echo("Comparing packages from Pyroscope and SBOM...")
+    logger.info("Comparing packages from Pyroscope and SBOM...")
     sbom_package_names = json.loads(sbom_package_names)
     sbom_package_names = sbom_package_names["Results"]
 
-    sbom_packages = [item["Vulnerabilities"] for item in sbom_package_names if item["Class"] != "lang-pkgs"][0]
+    # sbom_packages = [item["Vulnerabilities"] for item in sbom_package_names if item["Class"] != "lang-pkgs"][0]
+    sbom_packages = [item["Vulnerabilities"] for item in sbom_package_names][0]
     sbom_package_names = list(set([x["PkgName"] for x in sbom_packages]))
 
     if "total" in pyroscope_package_names:

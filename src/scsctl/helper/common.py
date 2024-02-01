@@ -101,7 +101,8 @@ def modify_and_build_docker_image(folder_path: str, package_nammes: list, bacth_
 def generate_final_report(sbom_package_names, pyroscope_package_names=[], falco_found_extra_packages=[], is_api=False):
     sbom_package_names = json.loads(sbom_package_names)
     sbom_package_names = sbom_package_names["Results"]
-    sbom_packages = [item["Vulnerabilities"] for item in sbom_package_names if item["Class"] != "lang-pkgs"][0]
+    sbom_packages = [item["Vulnerabilities"] for item in sbom_package_names][0]
+    # sbom_packages = [item["Vulnerabilities"] for item in sbom_package_names if item["Class"] != "lang-pkgs"][0]
     sbom_package_names = list(set([x["PkgName"] for x in sbom_packages]))
 
     if "total" in pyroscope_package_names:
@@ -114,6 +115,7 @@ def generate_final_report(sbom_package_names, pyroscope_package_names=[], falco_
     extra_packages = list(set(pyroscope_package_names + falco_found_extra_packages))
 
     # if len(extra_packages) == 0:
+    #     extra_packages = sbom_package_names
     #Generating summary for all vulnerable packages
     extra_packages = sbom_package_names
 

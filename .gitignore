@@ -5,5 +5,5 @@ dist
 *.egg-info
 __pycache__
 test.py
-testbed.ipynb
+*.ipynb
 values.yaml
