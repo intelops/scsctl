@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: python:3.10-slim@sha256
+  repository: ghcr.io/jegathintelops/scsctl
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
@@ -17,8 +17,6 @@ fullnameOverride: ""
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
-  # Automatically mount a ServiceAccount's API credentials?
-  automount: true
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
@@ -26,7 +24,6 @@ serviceAccount:
   name: ""
 
 podAnnotations: {}
-podLabels: {}
 
 podSecurityContext: {}
   # fsGroup: 2000
@@ -41,7 +38,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  port: 5000
 
 ingress:
   enabled: false
@@ -78,21 +75,22 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-# Additional volumes on the output Deployment definition.
-volumes: []
-# - name: foo
-#   secret:
-#     secretName: mysecret
-#     optional: false
-
-# Additional volumeMounts on the output Deployment definition.
-volumeMounts: []
-# - name: foo
-#   mountPath: "/etc/foo"
-#   readOnly: true
-
 nodeSelector: {}
 
 tolerations: []
 
 affinity: {}
+
+postgresql:
+  host: "postgresql"
+  port: "5432"
+  database: ""
+  username: "postgres"
+  password: ""
+  existingSecret: {}
+    # name: ""
+    # passwordKey: ""
+
+# Configure the environment variables for the application
+env:
+  SCSCTL_ENVIRONMENT: ""
