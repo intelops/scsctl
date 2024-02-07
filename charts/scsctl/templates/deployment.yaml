@@ -61,6 +61,24 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      initContainers:
+        - name: create-postgres-datbase
+          image: "{{ .Values.initContainer.image }}"
+          imagePullPolicy: {{ .Values.initContainer.imagePullPolicy }}
+          command: ['sh', '-c', 'until pg_isready -h {{ .Values.env.SCSCTL_PG_HOST }} -p {{ .Values.env.SCSCTL_PG_PORT }}; do echo waiting for database; sleep 2; done; psql -h {{ .Values.env.SCSCTL_PG_HOST }} -p {{ .Values.env.SCSCTL_PG_PORT }} -U {{ .Values.env.SCSCTL_PG_USER }} -d {{ .Values.env.SCSCTL_PG_DATABASE }} -c "CREATE DATABASE {{ .Values.env.SCSCTL_PG_DATABASE }}";']
+          env:
+            - name: SCSCTL_PG_HOST
+              value: "{{ .Values.env.SCSCTL_PG_HOST }}"
+            - name: SCSCTL_PG_PORT
+              value: "{{ .Values.env.SCSCTL_PG_PORT }}"
+            - name: SCSCTL_PG_USER
+              value: "{{ .Values.env.SCSCTL_PG_USER }}"
+            - name: SCSCTL_PG_PASSWORD
+              value: "{{ .Values.env.SCSCTL_PG_PASSWORD }}"
+            - name: SCSCTL_PG_DATABASE
+              value: "{{ .Values.env.SCSCTL_PG_DATABASE }}"
+          resources:
+            {{- toYaml .Values.initContainer.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
