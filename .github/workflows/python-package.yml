@@ -5,9 +5,9 @@ name: Python package
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "feat/capten_integration" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "feat/capten_integration" ]
 
 jobs:
   build:

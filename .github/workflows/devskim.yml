@@ -7,9 +7,9 @@ name: DevSkim
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "feat/capten_integration" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "feat/capten_integration" ]
   schedule:
     - cron: '26 19 * * 4'
 

@@ -9,10 +9,10 @@ name: CxFlow
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "feat/capten_integration" ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "main" ]
+    branches: [ "feat/capten_integration" ]
   schedule:
     - cron: '21 21 * * 3'
 

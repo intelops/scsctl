@@ -30,9 +30,9 @@ name: SonarCloud analysis
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "feat/capten_integration" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "feat/capten_integration" ]
   workflow_dispatch:
 
 permissions:

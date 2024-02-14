@@ -1,7 +1,7 @@
 name: scsctl_test
 on:
   push:
-    branches: [ main ]
+    branches: [ feat/capten_integration ]
   workflow_dispatch:
 
 jobs:

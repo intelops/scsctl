@@ -17,9 +17,9 @@ name: Pysa
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: [ "feat/capten_integration" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "feat/capten_integration" ]
   schedule:
     - cron: '38 5 * * 4'
 
