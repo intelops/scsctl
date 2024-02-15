@@ -2,9 +2,9 @@ name: Renovate
 
 on:
   push:
-    branches: [ "feat/capten_integration" ]
+    branches: [ "feat/renovate" ]
   pull_request:
-    branches: [ "feat/capten_integration" ]
+    branches: [ "feat/renovate" ]
   workflow_dispatch:
 
 jobs:

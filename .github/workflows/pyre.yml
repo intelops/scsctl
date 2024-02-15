@@ -18,9 +18,9 @@ name: Pyre
 on:
   workflow_dispatch:
   push:
-    branches: [ "feat/capten_integration" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "feat/capten_integration" ]
+    branches: [ "main" ]
 
 permissions:
     contents: read
