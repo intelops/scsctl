@@ -18,10 +18,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "scsctl.labels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
+        {{- include "scsctl.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -30,6 +27,29 @@ spec:
       serviceAccountName: {{ include "scsctl.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: create-postgres-datbase
+          image: "docker.io/bitnami/postgresql:16.0.0-debian-11-r13"
+          imagePullPolicy: Always
+          command:
+          - "/bin/sh"
+          - "-c"
+          - >
+            echo "Creating database {{ .Values.postgresql.database }} if it does not exist..." &&
+            psql -h {{ .Values.postgresql.host }} -p {{ .Values.postgresql.port }} -U {{ .Values.postgresql.username }} -lqt | cut -d \| -f 1 | grep -qw {{ .Values.postgresql.database }} || psql -h {{ .Values.postgresql.host }} -p {{ .Values.postgresql.port }} -U {{ .Values.postgresql.username }} -c "CREATE DATABASE {{ .Values.postgresql.database }};" &&
+            echo "Database {{ .Values.postgresql.database }} created or already exists. Listing all databases:" &&
+            psql -h {{ .Values.postgresql.host }} -p {{ .Values.postgresql.port }} -U {{ .Values.postgresql.username }} -l &&
+            sleep 5
+          env:
+          - name: PGPASSWORD
+            {{- if not .Values.postgresql.existingSecret }}
+            value: "{{ .Values.postgresql.password }}"
+            {{- else }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.postgresql.existingSecret.name }}
+                key: {{ .Values.postgresql.existingSecret.passwordKey }}
+            {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -40,24 +60,39 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          args:
+            - server
+          env:
+          - name: SCSCTL_PG_HOST
+            value: "{{ .Values.postgresql.host }}"
+          - name: SCSCTL_PG_PORT
+            value: "{{ .Values.postgresql.port }}"
+          - name: SCSCTL_PG_USER
+            value: "{{ .Values.postgresql.username }}"
+          - name: SCSCTL_PG_PASSWORD
+            {{- if not .Values.postgresql.existingSecret }}
+            value: "{{ .Values.postgresql.password }}"
+            {{- else }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.postgresql.existingSecret.name }}
+                key: {{ .Values.postgresql.existingSecret.passwordKey }}
+            {{- end }}
+          - name: SCSCTL_PG_DATABASE
+            value: "{{ .Values.postgresql.database }}"
+          - name: SCSCTL_ENVIRONMENT
+            value: "{{ .Values.env.SCSCTL_ENVIRONMENT }}"
+            
           livenessProbe:
             httpGet:
-              path: /
+              path: /healthz
               port: http
           readinessProbe:
             httpGet:
-              path: /
+              path: /ready
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- with .Values.volumeMounts }}
-          volumeMounts:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-      {{- with .Values.volumes }}
-      volumes:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
