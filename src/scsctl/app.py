@@ -163,8 +163,8 @@ def scan(
 
     choices = [
         "Sbom report",
-        "Pyroscope detected packages",
-        "Falco detected packages",
+        "Profiler detected packages",
+        "Runtime security tool detected packages",
         "Final report",
         "Rebuild the image",
         "Exit",
@@ -178,11 +178,11 @@ def scan(
             click.echo("Sbom report")
             click.echo("===========")
             print_sbom_report(sbom_report = sbom_report,is_non_interactive = True)
-            click.echo("Pyroscope detected packages")
+            click.echo("Profiler detected packages")
             click.echo("===========================")
             print_pyroscope_packages(pyroscope_package_names = pyroscope_data,is_non_interactive = True)
             if falco_enabled:
-                click.echo("Falco detected packages")
+                click.echo("Runtime security tool detected packages")
                 click.echo("=======================")
                 print_falco_packages(falco_package_names = falco_found_extra_packages,is_non_interactive = True)
             click.echo("Final Report")
@@ -195,9 +195,9 @@ def scan(
                     break
                 if choice == "Sbom report":
                     print_sbom_report(sbom_report)
-                if choice == "Pyroscope detected packages":
+                if choice == "Profiler detected packages":
                     print_pyroscope_packages(pyroscope_data)
-                if choice == "Falco detected packages":
+                if choice == "Runtime Security tool detected packages":
                     print_falco_packages(falco_found_extra_packages)
                 if choice == "Final report":
                     click.echo("Vulnerable packages that can be uninstalled from the docker image are:")

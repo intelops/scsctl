@@ -135,44 +135,44 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
     else:
         renovate_status = "Renovate not enabled"
 
-    if(is_api):
-        #If call is from api server then save status to db
-        generator = get_db()
-        db = next(generator)
-        scan = ScanStatus(
-                job_id=job_id,
-                execution_id=execution_id,
-                batch_id=batch_id,
-                run_type="api",
-                **stats.model_dump(),
-                status=scan_status
-            )
-        db.add(scan)
-        db.commit()
-        db.refresh(scan)
+    # if(is_api):
+    #     #If call is from api server then save status to db
+    #     generator = get_db()
+    #     db = next(generator)
+    #     scan = ScanStatus(
+    #             job_id=job_id,
+    #             execution_id=execution_id,
+    #             batch_id=batch_id,
+    #             run_type="api",
+    #             **stats.model_dump(),
+    #             status=scan_status
+    #         )
+    #     db.add(scan)
+    #     db.commit()
+    #     db.refresh(scan)
 
 
-        #Get scan status for all jobs for execution_id and check if job has vulnerable_packages_count greater than 0. If yes count that. This count is the count of vulnerable_images_count in executions table.
-        #get job ids for execution_id
-        job_ids = db.query(ExecutionJobs.job_id).filter(ExecutionJobs.execution_id == execution_id).all()
-        # Get vulnerable_packages_count for all each job_id with latest datetime
-        vulnerable_images_count = 0
-        vulnerabilities_count = 0
-        scan_status_temp = True
-        for job_id in job_ids:
-            counts = db.query(ScanStatus.vulnerablitites_count,ScanStatus.status).filter(ScanStatus.job_id == job_id[0]).order_by(ScanStatus.datetime.desc()).first()
-            if(counts and counts[0] > 0):
-                vulnerable_images_count += 1
-            if(counts):
-                vulnerabilities_count += counts[0]
-            if(counts and counts[1] == False):
-                scan_status_temp = False
+        # #Get scan status for all jobs for execution_id and check if job has vulnerable_packages_count greater than 0. If yes count that. This count is the count of vulnerable_images_count in executions table.
+        # #get job ids for execution_id
+        # job_ids = db.query(ExecutionJobs.job_id).filter(ExecutionJobs.execution_id == execution_id).all()
+        # # Get vulnerable_packages_count for all each job_id with latest datetime
+        # vulnerable_images_count = 0
+        # vulnerabilities_count = 0
+        # scan_status_temp = True
+        # for job_id in job_ids:
+        #     counts = db.query(ScanStatus.vulnerablitites_count,ScanStatus.status).filter(ScanStatus.job_id == job_id[0]).order_by(ScanStatus.datetime.desc()).first()
+        #     if(counts and counts[0] > 0):
+        #         vulnerable_images_count += 1
+        #     if(counts):
+        #         vulnerabilities_count += counts[0]
+        #     if(counts and counts[1] == False):
+        #         scan_status_temp = False
 
-        #Update the vulnerabilities_count in executions table
-        db.query(Executions).filter(Executions.execution_id == execution_id).update({"vulnerablities_count": vulnerabilities_count, "vulnerable_images_count": vulnerable_images_count, "status": scan_status_temp})
+        # #Update the vulnerabilities_count in executions table
+        # db.query(Executions).filter(Executions.execution_id == execution_id).update({"vulnerablities_count": vulnerabilities_count, "vulnerable_images_count": vulnerable_images_count, "status": scan_status_temp})
 
-        db.commit()
-        db.close()
+        # db.commit()
+        # db.close()
 
     return {
         "batch_id": batch_id,

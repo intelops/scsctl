@@ -5,9 +5,9 @@ name: scsctl build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main","feat/capten_integration" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "feat/capten_integration" ]
   workflow_dispatch:
 
 permissions:
