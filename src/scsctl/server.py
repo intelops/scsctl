@@ -4,7 +4,7 @@ from datetime import datetime
 from scsctl.helper.model import ScanConfig
 from scsctl.routers import schedule
 from scsctl.helper.scan import run_scan
-from scsctl.routers.schedule import create_scheduler
+# from scsctl.routers.schedule import create_scheduler
 from scsctl.helper.database import Base,engine
 import os
 
@@ -23,11 +23,11 @@ app = FastAPI(
     version="0.0.1"
 )
 
-app.include_router(schedule.router)
+# app.include_router(schedule.router)
 
-scheduler = create_scheduler()
-scheduler.start()
-app.scheduler = scheduler
+# scheduler = create_scheduler()
+# scheduler.start()
+# app.scheduler = scheduler
 
 Base.metadata.create_all(bind=engine)
 
