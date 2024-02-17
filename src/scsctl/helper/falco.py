@@ -59,7 +59,8 @@ def compare_and_find_extra_packages_using_falco(falco_package_names, sbom_packag
     sbom_package_names = json.loads(sbom_package_names)
     sbom_package_names = sbom_package_names["Results"]
 
-    sbom_packages = [item["Vulnerabilities"] for item in sbom_package_names if item["Class"] != "lang-pkgs"][0]
+    # sbom_packages = [item["Vulnerabilities"] for item in sbom_package_names if item["Class"] != "lang-pkgs"][0]
+    sbom_packages = [item["Vulnerabilities"] for item in sbom_package_names][0]
     sbom_package_names = list(set([x["PkgName"] for x in sbom_packages]))
     final_res = []
     for item in sbom_package_names:

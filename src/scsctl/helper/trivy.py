@@ -11,7 +11,7 @@ from scsctl.helper.dgraph import connect_local
 def install_trivy():
     try:
         subprocess.run(
-            "curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/.local/bin",
+            "curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /home",
             shell=True,
             check=True,
         )
@@ -28,7 +28,7 @@ def get_sbom_report(app_details: AppDetails):
         if result.returncode == 0:
             docker_trivy_installed = True
         else:
-            result = subprocess.run("$HOME/.local/bin/trivy --version", capture_output=True, shell=True)
+            result = subprocess.run("/home/trivy --version", capture_output=True, shell=True)
         if result.returncode != 0:
             click.echo("\nTrivy is not installed. Installing Trivy...")
             install_trivy()
@@ -40,7 +40,7 @@ def get_sbom_report(app_details: AppDetails):
     if docker_trivy_installed:
         cmd = f"/usr/local/bin/trivy image {app_details.docker_image_name} --cache-dir /tmp/.cache --format json"
     else:
-        cmd = f"$HOME/.local/bin/trivy image {app_details.docker_image_name} --cache-dir /tmp/.cache --format json"
+        cmd = f"/home/trivy image {app_details.docker_image_name} --cache-dir /tmp/.cache --format json"
     try:
         click.echo(f"Running Trivy scan")
         result = subprocess.run(cmd, capture_output=True, shell=True, check=True)
@@ -56,7 +56,8 @@ def get_sbom_report(app_details: AppDetails):
 def print_sbom_report(sbom_report,is_non_interactive=False):
     sbom_report = json.loads(sbom_report)
     sbom_report = sbom_report["Results"]
-    sbom_report = [item["Vulnerabilities"] for item in sbom_report if item["Class"] != "lang-pkgs"][0]
+    # sbom_report = [item["Vulnerabilities"] for item in sbom_report if item["Class"] != "lang-pkgs"][0]
+    sbom_report = [item["Vulnerabilities"] for item in sbom_report][0]
 
     chunk_size = 200
     index = 0

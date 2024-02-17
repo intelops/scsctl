@@ -37,7 +37,7 @@ import uuid
 #     conn.commit()
 #     conn.close()
 
-def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyroscope_app_name = None, pyroscope_url = None, dgraph_enabled = False, dgraph_db_host = "", dgraph_db_port = "",renovate_enabled = False, falco_enabled = False,falco_pod_name = "",falco_target_deployment_name = "", db_enabled = False, renovate_repo_token = "", renovate_repo_name = "", docker_file_folder_path = "",is_api = False, **kwargs):
+def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyroscope_app_name = None, pyroscope_url = None, dgraph_enabled = False, dgraph_db_host = "", dgraph_db_port = "",renovate_enabled = False, falco_enabled = False,falco_pod_name = "",falco_target_deployment_name = "", db_enabled = False, renovate_repo_token = "", renovate_repo_name = "", docker_file_folder_path = "",is_api = False,rebuild_image = False, **kwargs):
     execution_id = kwargs.get("execution_id", None)
     if(batch_id == None):
         current_datetime = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
@@ -183,5 +183,6 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
         "falco_found_extra_packages": falco_found_extra_packages,
         "final_report": final_report,
         "stats": stats.model_dump(),
-        "renovate_status" : renovate_status
+        "renovate_status" : renovate_status,
+        "rebuild_image": ""
     }

@@ -7,6 +7,9 @@ from scsctl.helper.scan import run_scan
 # from scsctl.routers.schedule import create_scheduler
 from scsctl.helper.database import Base,engine
 import os
+import docker
+from kubernetes import client, config
+import time
 
 
 #TEMP
@@ -29,16 +32,88 @@ app = FastAPI(
 # scheduler.start()
 # app.scheduler = scheduler
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 #TODO: Fix multiple scan if scan is missed
 
-@app.post("/scan", include_in_schema=False)
-async def scan_api(config: ScanConfig):
-    current_datetime = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    batch_id = f"scsctl_{current_datetime}"
+# @app.post("/scan", include_in_schema=False)
+# async def scan_api(config: ScanConfig):
+#     current_datetime = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+#     batch_id = f"scsctl_{current_datetime}"
 
-    return run_scan(batch_id=batch_id, **config.model_dump(), is_api=True)
+#     return run_scan(batch_id=batch_id, **config.model_dump(), is_api=True)
+# TODO: Need to update this probes later
+@app.get("/ready", include_in_schema=False)
+async def readinessProbe():
+    return {"status": "ok"}
+
+
+@app.get("/healthz", include_in_schema=False)
+async def livenessProbe():
+    # check if postgres
+    return {"status": "ok"}
+
+def run_container(image_url):
+    config.load_incluster_config()
+    api = client.CoreV1Api()
+
+    container_name = "proact-rebuilded-qttest"
+    namespace = "proact"
+
+    container_manifest = {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": {"name": container_name},
+        "spec": {
+            "containers": [
+                {"name": container_name, "image": image_url, "command": ["/bin/sleep", "infinity"]}
+            ]
+        }
+    }
+
+    api.create_namespaced_pod(namespace, body=container_manifest)
+
+    # Wait for the container to be running (you might need to customize based on your container startup time)
+    while True:
+        pod = api.read_namespaced_pod(name=container_name, namespace=namespace)
+        if pod.status.phase == "Running":
+            break
+        time.sleep(1)
+
+@app.post("/rebuild", include_in_schema=True)
+async def rebuild_api():
+    image_url = 'ghcr.io/arunnintelops/qt-test-application:latest'
+
+    run_container(image_url)
+    # client = docker.from_env()
+    # client.images.pull(image_url)
+    # config.load_kube_config()
+    # api = client.CoreV1Api()
+
+    # container_name = "proact-rebuilded-qttest"
+    # namespace = "proact"
+
+    # container_manifest = {
+    #     "apiVersion": "v1",
+    #     "kind": "Pod",
+    #     "metadata": {"name": container_name},
+    #     "spec": {
+    #         "containers": [
+    #             {"name": container_name, "image": image_url, "command": ["/bin/sleep", "infinity"]}
+    #         ]
+    #     }
+    # }
+
+    # # Wait for the container to be running (you might need to customize based on your container startup time)
+    # while True:
+    #     pod = api.read_namespaced_pod(name=container_name, namespace=namespace)
+    #     if pod.status.phase == "Running":
+    #         break
+    #     time.sleep(1)
+
+    # api.create_namespaced_pod(namespace, body=container_manifest)
+
+    return "Rebuild API"
 
     
 if __name__ == "__main__":
