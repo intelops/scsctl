@@ -69,6 +69,37 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
                     pyroscope_package_names=pyroscope_data,
                     sbom_package_names=sbom_report,
                 )
+
+                if falco_enabled:
+                    falco_package_paths, falco_status = parse_logs_and_get_package_paths(
+                        falco_pod_name=falco_pod_name, target_deployment_name=falco_target_deployment_name
+                    )
+                    if falco_status:
+                        falco_found_extra_packages = compare_and_find_extra_packages_using_falco(
+                            falco_package_paths, sbom_report
+                        )
+                    final_report, stats = generate_final_report(
+                        sbom_package_names=sbom_report,
+                        pyroscope_package_names=pyroscope_found_extra_packages,
+                        falco_found_extra_packages=falco_found_extra_packages,
+                        is_api = is_api
+                    )
+                else:
+                    final_report, stats = generate_final_report(
+                        sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages, is_api = is_api
+                    )
+                if db_enabled:
+                    if(dgraph_enabled):
+                        save_sbom_data_to_dgraph(sbom_data=sbom_report, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
+                        save_pyroscope_data_to_dgraph(pyroscope_data=pyroscope_data, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
+                        if falco_enabled:
+                            save_falco_data_to_dgraph(falco_data=falco_found_extra_packages, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
+                    else:
+                        save_sbom_data(sbom_data=sbom_report, batch_id=batch_id)
+                        save_pyroscope_data(pyroscope_data=pyroscope_data, batch_id=batch_id)
+                        if falco_enabled:
+                            save_falco_data(falco_data=falco_found_extra_packages, batch_id=batch_id)
+                
             else:
                 scan_status = False
                 print("\nError fetching data from pyroscope... Exiting")        

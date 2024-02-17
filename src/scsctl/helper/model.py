@@ -8,8 +8,14 @@ from enum import Enum
 from typing import Optional
 
 class ScanConfig(BaseModel):
+    @validator('*', pre=True)
+    def empty_str_to_none(cls, v):
+        if v == '':
+            return None
+        return v
     docker_image_name: str
-    pyroscope_url: Optional[str] = Field(default=None)
+    pyroscope_enabled: Optional[bool] = Field(default=False)
+    pyroscope_url: Optional[str] = None
     pyroscope_app_name: Optional[str] = Field(default=None)
     falco_pod_name: Optional[str] = Field(default=None)
     falco_target_deployment_name: Optional[str] = Field(default=None)
@@ -22,6 +28,7 @@ class ScanConfig(BaseModel):
     dgraph_enabled: Optional[bool] = Field(default=False)
     dgraph_db_host: Optional[str] = Field(default=None)
     dgraph_db_port: Optional[str] = Field(default=None)
+    rebuild_image: Optional[bool] = Field(default=False)
 
 class CreateScheduleConfig(BaseModel):
     schedule_name: str
