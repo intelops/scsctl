@@ -8,7 +8,6 @@ from scsctl.helper.scan import run_scan
 from scsctl.helper.database import Base,engine
 import os
 import docker
-from kubernetes import client, config
 import time
 
 
@@ -79,41 +78,6 @@ def run_container(image_url):
         if pod.status.phase == "Running":
             break
         time.sleep(1)
-
-@app.post("/rebuild", include_in_schema=True)
-async def rebuild_api():
-    image_url = 'ghcr.io/arunnintelops/qt-test-application:latest'
-
-    run_container(image_url)
-    # client = docker.from_env()
-    # client.images.pull(image_url)
-    # config.load_kube_config()
-    # api = client.CoreV1Api()
-
-    # container_name = "proact-rebuilded-qttest"
-    # namespace = "proact"
-
-    # container_manifest = {
-    #     "apiVersion": "v1",
-    #     "kind": "Pod",
-    #     "metadata": {"name": container_name},
-    #     "spec": {
-    #         "containers": [
-    #             {"name": container_name, "image": image_url, "command": ["/bin/sleep", "infinity"]}
-    #         ]
-    #     }
-    # }
-
-    # # Wait for the container to be running (you might need to customize based on your container startup time)
-    # while True:
-    #     pod = api.read_namespaced_pod(name=container_name, namespace=namespace)
-    #     if pod.status.phase == "Running":
-    #         break
-    #     time.sleep(1)
-
-    # api.create_namespaced_pod(namespace, body=container_manifest)
-
-    return "Rebuild API"
 
     
 if __name__ == "__main__":
