@@ -27,7 +27,7 @@ from scsctl.helper.database import get_db
 from datetime import datetime
 
 import uuid
-
+import requests
 
 # def save_status_to_db(batch_id, docker_image_name,pyroscope_app_name = None, pyroscope_url = None, renovate_enabled = False, falco_enabled = False, db_enabled = False, renovate_status = "", sbom_status = False, pyroscope_status = False, falco_status = False, scan_status = False):
 #     cursor, conn = get_cursor()
@@ -50,6 +50,7 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
     final_report = []
     sbom_report = []
     falco_found_extra_packages = []
+    rebuild_image_response = None
     appDetails = AppDetails(
         pyroscope_app_name=pyroscope_app_name, docker_image_name=docker_image_name, pyroscope_url=pyroscope_url
     )
@@ -71,23 +72,43 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
                 )
 
                 if falco_enabled:
-                    falco_package_paths, falco_status = parse_logs_and_get_package_paths(
-                        falco_pod_name=falco_pod_name, target_deployment_name=falco_target_deployment_name
-                    )
-                    if falco_status:
-                        falco_found_extra_packages = compare_and_find_extra_packages_using_falco(
-                            falco_package_paths, sbom_report
-                        )
+                    # falco_package_paths, falco_status = parse_logs_and_get_package_paths(
+                    #     falco_pod_name=falco_pod_name, target_deployment_name=falco_target_deployment_name
+                    # )
+                    # if falco_status:
+                    #     falco_found_extra_packages = compare_and_find_extra_packages_using_falco(
+                    #         falco_package_paths, sbom_report
+                    #     )
+                    # final_report, stats = generate_final_report(
+                    #     sbom_package_names=sbom_report,
+                    #     pyroscope_package_names=pyroscope_found_extra_packages,
+                    #     falco_found_extra_packages=falco_found_extra_packages,
+                    #     is_api = is_api
+                    # )
+
+                    #Temp-------------------------------
                     final_report, stats = generate_final_report(
-                        sbom_package_names=sbom_report,
-                        pyroscope_package_names=pyroscope_found_extra_packages,
-                        falco_found_extra_packages=falco_found_extra_packages,
-                        is_api = is_api
+                        sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages, is_api = is_api
                     )
+                    #Temp-------------------------------
                 else:
                     final_report, stats = generate_final_report(
                         sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages, is_api = is_api
                     )
+                if rebuild_image:
+                    #Send request to rebuild image to another api
+                    url = "http://74.220.23.227/rebuild"
+                    data = {
+                        "image_path": docker_image_name,
+                        "packages_to_remove": pyroscope_found_extra_packages
+                    }
+                    headers = {
+                    "Content-Type": "application/json",
+                    "accept": "application/json",
+                    }
+                    res = requests.post(url, json = data, headers=headers)
+                    if(res.status_code == 200):
+                        rebuild_image_response = res.json()
                 if db_enabled:
                     if(dgraph_enabled):
                         save_sbom_data_to_dgraph(sbom_data=sbom_report, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
@@ -113,27 +134,49 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
                     "falco_found_extra_packages": falco_found_extra_packages,
                     "final_report": final_report,
                     "stats": stats.model_dump(),
-                    "renovate_status" : renovate_status
+                    "renovate_status" : renovate_status,
+                    "rebuild_image_name": "",
+                    "rebuild_image_status": ""
                 }
         else:
             if falco_enabled:
-                falco_package_paths, falco_status = parse_logs_and_get_package_paths(
-                    falco_pod_name=falco_pod_name, target_deployment_name=falco_target_deployment_name
-                )
-                if falco_status:
-                    falco_found_extra_packages = compare_and_find_extra_packages_using_falco(
-                        falco_package_paths, sbom_report
-                    )
+                # falco_package_paths, falco_status = parse_logs_and_get_package_paths(
+                #     falco_pod_name=falco_pod_name, target_deployment_name=falco_target_deployment_name
+                # )
+                # if falco_status:
+                #     falco_found_extra_packages = compare_and_find_extra_packages_using_falco(
+                #         falco_package_paths, sbom_report
+                #     )
+                # final_report, stats = generate_final_report(
+                #     sbom_package_names=sbom_report,
+                #     pyroscope_package_names=pyroscope_found_extra_packages,
+                #     falco_found_extra_packages=falco_found_extra_packages,
+                #     is_api = is_api
+                # )
+
+                #Temp-------------------------------
                 final_report, stats = generate_final_report(
-                    sbom_package_names=sbom_report,
-                    pyroscope_package_names=pyroscope_found_extra_packages,
-                    falco_found_extra_packages=falco_found_extra_packages,
-                    is_api = is_api
+                    sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages, is_api = is_api
                 )
+                #Temp-------------------------------
             else:
                 final_report, stats = generate_final_report(
                     sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages, is_api = is_api
                 )
+
+            if rebuild_image:
+                #Send request to rebuild image to another api
+                url = "http://74.220.23.227/rebuild"
+                data = {
+                    "image_path": docker_image_name,
+                    "packages_to_remove": pyroscope_found_extra_packages
+                }
+                headers = {
+                    "Content-Type": "application/json"
+                }
+                res = requests.post(url, json = data, headers=headers)
+                if(res.status_code == 200):
+                    rebuild_image_response = res.json()
             if db_enabled:
                 if(dgraph_enabled):
                     save_sbom_data_to_dgraph(sbom_data=sbom_report, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
@@ -215,5 +258,6 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
         "final_report": final_report,
         "stats": stats.model_dump(),
         "renovate_status" : renovate_status,
-        "rebuild_image": ""
+        "rebuild_image_name": rebuild_image_response["image"] if rebuild_image_response else "",
+        "rebuild_image_status": rebuild_image_response["status"] if rebuild_image_response else ""
     }
