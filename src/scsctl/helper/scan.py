@@ -96,6 +96,7 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
                         sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages, is_api = is_api
                     )
                 if rebuild_image:
+                    print(f"Rebuilding image {docker_image_name} with packages {pyroscope_found_extra_packages}")
                     #Send request to rebuild image to another api
                     url = "http://74.220.23.227/rebuild"
                     data = {
@@ -165,6 +166,7 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
                 )
 
             if rebuild_image:
+                print(f"Rebuilding image {docker_image_name} with packages {pyroscope_found_extra_packages}")
                 #Send request to rebuild image to another api
                 url = "http://74.220.23.227/rebuild"
                 data = {
