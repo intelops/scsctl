@@ -96,20 +96,23 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
                         sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages, is_api = is_api
                     )
                 if rebuild_image:
-                    print(f"Rebuilding image {docker_image_name} with packages {pyroscope_found_extra_packages}")
-                    #Send request to rebuild image to another api
-                    url = "http://74.220.23.227/rebuild"
-                    data = {
-                        "image_path": docker_image_name,
-                        "packages_to_remove": pyroscope_found_extra_packages
-                    }
-                    headers = {
-                    "Content-Type": "application/json",
-                    "accept": "application/json",
-                    }
-                    res = requests.post(url, json = data, headers=headers)
-                    if(res.status_code == 200):
-                        rebuild_image_response = res.json()
+                    try:
+                        print(f"Rebuilding image {docker_image_name} with packages {pyroscope_found_extra_packages}")
+                        #Send request to rebuild image to another api
+                        url = "http://74.220.23.227/rebuild"
+                        data = {
+                            "image_path": docker_image_name,
+                            "packages_to_remove": pyroscope_found_extra_packages
+                        }
+                        headers = {
+                        "Content-Type": "application/json",
+                        "accept": "application/json",
+                        }
+                        res = requests.post(url, json = data, headers=headers)
+                        if(res.status_code == 200):
+                            rebuild_image_response = res.json()
+                    except Exception as e:
+                        print(f"Error rebuilding image {e}")
                 if db_enabled:
                     if(dgraph_enabled):
                         save_sbom_data_to_dgraph(sbom_data=sbom_report, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
@@ -166,19 +169,22 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
                 )
 
             if rebuild_image:
-                print(f"Rebuilding image {docker_image_name} with packages {pyroscope_found_extra_packages}")
-                #Send request to rebuild image to another api
-                url = "http://74.220.23.227/rebuild"
-                data = {
-                    "image_path": docker_image_name,
-                    "packages_to_remove": pyroscope_found_extra_packages
-                }
-                headers = {
-                    "Content-Type": "application/json"
-                }
-                res = requests.post(url, json = data, headers=headers)
-                if(res.status_code == 200):
-                    rebuild_image_response = res.json()
+                try:
+                    print(f"Rebuilding image {docker_image_name} with packages {pyroscope_found_extra_packages}")
+                    #Send request to rebuild image to another api
+                    url = "http://74.220.23.227/rebuild"
+                    data = {
+                        "image_path": docker_image_name,
+                        "packages_to_remove": pyroscope_found_extra_packages
+                    }
+                    headers = {
+                        "Content-Type": "application/json"
+                    }
+                    res = requests.post(url, json = data, headers=headers)
+                    if(res.status_code == 200):
+                        rebuild_image_response = res.json()
+                except Exception as e:
+                        print(f"Error rebuilding image {e}")
             if db_enabled:
                 if(dgraph_enabled):
                     save_sbom_data_to_dgraph(sbom_data=sbom_report, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
