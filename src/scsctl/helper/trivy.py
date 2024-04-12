@@ -7,16 +7,34 @@ from scsctl.helper.common import AppDetails
 import questionary
 from datetime import datetime
 from scsctl.helper.dgraph import connect_local
+import os
+import shlex
+
+user = os.environ["USER"]
 
 def install_trivy():
     try:
-        subprocess.run(
-            "curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /home",
-            shell=True,
-            check=True,
-        )
-        print("Trivy installation successful.")
-    except subprocess.CalledProcessError as e:
+
+        curl_cmd = ["curl", "-sfL", "https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh"]
+
+        try:
+            result = subprocess.run(curl_cmd, capture_output=True, check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"curl command failed with exit code {e.returncode}")
+            print(e.stderr.decode())
+        else:
+            script_content = result.stdout.decode()
+            print("Installation script downloaded successfully.")
+            install_cmd = ["sh", "-s", "--", "-b", f"/home/{user}"]
+            try:
+                print("Running Trivy installation script...")
+                result = subprocess.run(install_cmd, input=script_content.encode(), capture_output=True, check=True)
+            except subprocess.CalledProcessError as e:
+                print(f"sh command failed with exit code {e.returncode}")
+                print(e.stderr.decode())
+            else:
+                print("Trivy installation completed successfully.")
+    except Exception as e:
         print(f"Trivy installation failed: {e}")
 
 
@@ -24,26 +42,31 @@ def get_sbom_report(app_details: AppDetails):
     # Check if Trivy is installed
     docker_trivy_installed = False
     try:
-        result = subprocess.run("/usr/local/bin/trivy --version", capture_output=True, shell=True)
-        if result.returncode == 0:
-            docker_trivy_installed = True
-        else:
-            result = subprocess.run("/home/trivy --version", capture_output=True, shell=True)
-        if result.returncode != 0:
+        cmd = ["/usr/local/bin/trivy", "--version"]
+        result = subprocess.run(cmd, capture_output=True)
+        docker_trivy_installed = True
+        # else:
+        #     cmd = [f"/home/{user}/trivy", "--version"]
+        #     result = subprocess.run(cmd, capture_output=True)
+        # if result.returncode != 0:
+            # click.echo("\nTrivy is not installed. Installing Trivy...")
+            # install_trivy()
+    except Exception as e:
+        try:
+            cmd = [f"/home/{user}/trivy", "--version"]
+            result = subprocess.run(cmd, capture_output=True)
+        except Exception as e:
             click.echo("\nTrivy is not installed. Installing Trivy...")
             install_trivy()
-    except subprocess.CalledProcessError as e:
-        click.echo(f"\nError checking Trivy installation: {e}")
-        return
 
     # Trivy is installed, proceed with the scan
     if docker_trivy_installed:
-        cmd = f"/usr/local/bin/trivy image {app_details.docker_image_name} --cache-dir /tmp/.cache --format json"
+        cmd = [f"/usr/local/bin/trivy", "image", app_details.docker_image_name, "--cache-dir", "/tmp/.cache", "--format", "json"]
     else:
-        cmd = f"/home/trivy image {app_details.docker_image_name} --cache-dir /tmp/.cache --format json"
+        cmd = [f"/home/{user}/trivy", "image", app_details.docker_image_name, "--cache-dir", "/tmp/.cache", "--format", "json"]
     try:
         click.echo(f"Running Trivy scan")
-        result = subprocess.run(cmd, capture_output=True, shell=True, check=True)
+        result = subprocess.run(cmd, capture_output=True, check=True)
         json_output = result.stdout.decode("utf-8")
         return json_output, True
         # Process the JSON output or save it to a file

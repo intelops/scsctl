@@ -171,7 +171,7 @@ def scan(
     ]
 
     if falco_enabled == False:
-        choices.remove("Falco detected packages")
+        choices.remove("Runtime security tool detected packages")
 
     if scan_status:
         if(non_interactive):
