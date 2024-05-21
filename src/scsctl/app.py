@@ -7,7 +7,7 @@ from scsctl.helper.falco import (
 from scsctl.helper.pyroscope import (
     print_pyroscope_packages,
 )
-from scsctl.helper.common import AppDetails, modify_and_build_docker_images, custom_style_fancy
+from scsctl.helper.common import AppDetails, modify_and_build_docker_image, custom_style_fancy
 from scsctl.helper.trivy import print_sbom_report
 
 import yaml
@@ -56,7 +56,7 @@ def cli():
 @click.option("--non_interactive", help="Run scsctl in non interactive mode", default= False, is_flag=True, flag_value=True)
 @click.option("--rebuild_image", help="Rebuild the image", default=False, is_flag=True, flag_value=True)
 @click.option(
-    "--docker_file_folder_path", help="Path of the docker file to rebuild", default=None, is_flag=False, flag_value=None, multiple=True
+    "--docker_file_folder_path", help="Path of the docker file to rebuild", default=None, is_flag=False
 )
 @click.option("--config_file", help="Path of the configuration file", default=None, is_flag=False, flag_value=None)
 
@@ -172,6 +172,10 @@ def scan(
 
     if falco_enabled == False:
         choices.remove("Runtime security tool detected packages")
+    if(docker_file_folder_path):
+        choices.remove("Rebuild the image")
+    if(len(pyroscope_data) == 0):
+        choices.remove("Profiler detected packages")
 
     if scan_status:
         if(non_interactive):
@@ -205,8 +209,8 @@ def scan(
                 if choice == "Rebuild the image":
                     if docker_file_folder_path == None:
                         docker_file_folder_path = click.prompt("Enter docker file folder path", type=str)
-                    # modify_and_build_docker_image(docker_file_folder_path, pyroscope_found_extra_packages, batch_id)
-                    modify_and_build_docker_images(file_paths=docker_file_folder_path,package_names=pyroscope_found_extra_packages,batch_id=batch_id)
+                    modify_and_build_docker_image(docker_file_folder_path, pyroscope_found_extra_packages, batch_id)
+                    # modify_and_build_docker_images(file_paths=docker_file_folder_path,package_names=pyroscope_found_extra_packages,batch_id=batch_id)
 
 
 cli.add_command(scan)

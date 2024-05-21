@@ -9,23 +9,68 @@ from scsctl.helper.clickhouse import connect_to_db
 from scsctl.helper.dgraph import connect_local
 
 
-def get_pyroscope_data(app_details: AppDetails):
-    # url = f"http://localhost:4040/render?query={pyroscope_app_name}.cpu&from=now-1h&until=now&format=json"
-    click.echo(f"Fetching data from pyroscope for {app_details.pyroscope_app_name}...")
-    # url = f"{app_details.pyroscope_url}/render?query={app_details.pyroscope_app_name}.cpu&from=now-1h&until=now&format=json"
-    url = f"{app_details.pyroscope_url}/render?query={app_details.pyroscope_app_name}.cpu&from=now-24h&until=now&format=json"
-    print(url)
-    try:
-        response = requests.get(url)
-    except Exception as e:
-        click.echo(f"\n{e}")
-        return "", False
-    if response.status_code == 200:
-        data = response.json()
-        package_names = data["flamebearer"]["names"]
-        return package_names, True
-    return [], False
+# def get_pyroscope_data(app_details: AppDetails):
+#     # url = f"http://localhost:4040/render?query={pyroscope_app_name}.cpu&from=now-1h&until=now&format=json"
+#     click.echo(f"Fetching data from pyroscope for {app_details.pyroscope_app_name}...")
+#     url = f"{app_details.pyroscope_url}/render?query={app_details.pyroscope_app_name}.cpu&from=now-24h&until=now&format=json"
 
+#     # service_name = f'{{service_name="{app_details.pyroscope_app_name}"}}'
+#     # url = f'{app_details.pyroscope_url}/pyroscope/render?query=process_cpu:cpu:nanoseconds:cpu:nanoseconds{{service_name="{app_details.pyroscope_app_name}"}}&from=now-1h'
+#     # click.echo(url)
+#     try:
+#         response = requests.get(url)
+#         response.raise_for_status()
+#     except Exception as e:
+#         click.echo("-----------------------------")
+#         click.echo(f"\n{e}")
+#         try:
+#             url = f'{app_details.pyroscope_url}/pyroscope/render?query=process_cpu:cpu:nanoseconds:cpu:nanoseconds{{service_name="{app_details.pyroscope_app_name}"}}&from=now-24h'
+#             click.echo(url)
+#             response = requests.get(url)
+#             response.raise_for_status()
+#             click.echo(response)
+#         except Exception as e:
+#             click.echo(f"\n{e}")
+#             return "", False
+#     if response.status_code == 200:
+#         data = response.json()
+#         package_names = data["flamebearer"]["names"]
+#         return package_names, True
+#     else:
+#         click.echo(f"Error fetching data from pyroscope - {response.text}")
+#     return [], False
+def get_pyroscope_data(app_details):
+    click.echo(f"Fetching data from pyroscope for {app_details.pyroscope_app_name}...")
+    primary_url = f"{app_details.pyroscope_url}/render?query={app_details.pyroscope_app_name}.cpu&from=now-24h&until=now&format=json"
+    fallback_url = f'{app_details.pyroscope_url}/pyroscope/render?query=process_cpu:cpu:nanoseconds:cpu:nanoseconds{{service_name="{app_details.pyroscope_app_name}"}}&from=now-24h'
+    def fetch_data(url):
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            if not response.json():
+                return None
+            return response
+        except requests.exceptions.RequestException as e:
+            return None
+
+    click.echo(f"Trying primary URL...")
+    response = fetch_data(primary_url)
+    if not response:
+        click.echo(f"Trying fallback URL...")
+        response = fetch_data(fallback_url)
+    
+    if response and response.status_code == 200:
+        try:
+            data = response.json()
+            package_names = data["flamebearer"]["names"]
+            return package_names, True
+        except (KeyError, ValueError) as e:
+            click.echo(f"Error processing response data: {e}")
+    else:
+        if response:
+            click.echo(f"Error fetching data from pyroscope - {response.text}")
+
+    return [], False
 
 def print_pyroscope_packages(pyroscope_package_names,is_non_interactive = False):
     if "total" in pyroscope_package_names:

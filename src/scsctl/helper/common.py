@@ -7,6 +7,7 @@ import shutil
 from tabulate import tabulate
 import json
 from scsctl.helper.model import Stats
+from scsctl.helper.rebuilder import build_image_with_kaniko_and_download
 
 custom_style_fancy = Style(
     [
@@ -70,15 +71,19 @@ def modify_and_build_docker_images(file_paths: list, package_names: list, batch_
 
 def modify_and_build_docker_image(folder_path: str, package_nammes: list, bacth_id: str):
     # Make a copy of folder in a ./temp folder, create folder if it doesn't exist
+    # Check if folder_path is a folder or file, if its file take the folder path
+    if not os.path.isdir(folder_path):
+        file_name = os.path.basename(folder_path)
+        folder_path = os.path.dirname(folder_path)
     if os.path.exists("./temp"):
         shutil.rmtree("./temp/")
     shutil.copytree(folder_path, "./temp/")
 
-    # Create a new file which contains all the packages names to uninstall
+    # # Create a new file which contains all the packages names to uninstall
     with open("./temp/packages.txt", "w") as f:
         f.write("\n".join(package_nammes))
     # Add the uninstall commands at the end of the file
-    with open("./temp/Dockerfile", "a") as f:
+    with open(f"./temp/{file_name}", "a") as f:
         f.write("\nCOPY packages.txt /tmp/packages.txt")
         f.write(
             '\nRUN while read -r package; do \\\n   if dpkg-query -W --showformat=\'${Essential}\' "$package" | grep -q \'^no$\'; then \\\n   apt-get remove -y "$package"; \\\n    else \\\n   echo "Skipping essential package: $package"; \\\n   fi; \\\ndone < /tmp/packages.txt'
@@ -87,7 +92,10 @@ def modify_and_build_docker_image(folder_path: str, package_nammes: list, bacth_
     # Build the docker image with the modified Dockerfile and tag it with the batch id
     click.echo("Building the docker image...")
     try:
-        subprocess.check_output(["docker", "build", "-t", f"{bacth_id}", "./temp/"])
+        # Abosule path of the temp folder
+        absoulute_path = os.path.abspath("./temp/")
+        build_image_with_kaniko_and_download(f"{absoulute_path}/{file_name}", "rebuilded-image", "latest")
+        # subprocess.check_output(["docker", "build", "-t", f"{bacth_id}", "./temp/"])
     except subprocess.CalledProcessError as e:
         click.echo(f"Error building the docker image: {e}")
         return False

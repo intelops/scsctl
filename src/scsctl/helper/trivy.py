@@ -7,10 +7,9 @@ from scsctl.helper.common import AppDetails
 import questionary
 from datetime import datetime
 from scsctl.helper.dgraph import connect_local
-import os
-import shlex
+import getpass
 
-user = os.environ["USER"]
+user = getpass.getuser()
 
 def install_trivy():
     try:
