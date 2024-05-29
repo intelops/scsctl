@@ -9,6 +9,7 @@ from scsctl.helper.pyroscope import (
 )
 from scsctl.helper.common import AppDetails, modify_and_build_docker_image, custom_style_fancy
 from scsctl.helper.trivy import print_sbom_report
+from scsctl.helper.renovate import print_renovate_report
 
 import yaml
 
@@ -88,7 +89,6 @@ def scan(
     if config_file is not None:
         with open(config_file, "r") as f:
             config_data = yaml.safe_load(f)
-
         # If command line options are not provided, take the options from the configuration file
         if pyroscope_app_name is None:
             pyroscope_app_name = config_data.get("pyroscope_app_name")
@@ -108,6 +108,10 @@ def scan(
             db_hashicorp_vault_token = config_data.get("db_hashicorp_vault_token")
         if db_hashicorp_vault_path is None:
             db_hashicorp_vault_path = config_data.get("db_hashicorp_vault_path")
+        if renovate_repo_token is None:
+            renovate_repo_token = config_data.get("renovate_repo_token")
+        if renovate_repo_name is None:
+            renovate_repo_name = config_data.get("renovate_repo_name")
 
         # For flags, only set from config if not set from command line
         if not rebuild_image:
@@ -159,12 +163,14 @@ def scan(
     pyroscope_found_extra_packages = result.get("pyroscope_found_extra_packages")
     falco_found_extra_packages = result.get("falco_found_extra_packages")
     final_report = result.get("final_report")
+    renovate_report = result.get("renovate_report")
 
 
     choices = [
         "Sbom report",
         "Profiler detected packages",
         "Runtime security tool detected packages",
+        "Renovate report",
         "Final report",
         "Rebuild the image",
         "Exit",
@@ -176,6 +182,8 @@ def scan(
         choices.remove("Rebuild the image")
     if(len(pyroscope_data) == 0):
         choices.remove("Profiler detected packages")
+    if(renovate_enabled == False):
+        choices.remove("Renovate report")
 
     if scan_status:
         if(non_interactive):
@@ -189,6 +197,10 @@ def scan(
                 click.echo("Runtime security tool detected packages")
                 click.echo("=======================")
                 print_falco_packages(falco_package_names = falco_found_extra_packages,is_non_interactive = True)
+            if renovate_enabled:
+                click.echo("Renovate report")
+                click.echo("===============")
+                print_renovate_report(renovate_report = renovate_report,is_non_interactive = True)
             click.echo("Final Report")
             click.echo("=============")
             click.echo(final_report)
@@ -203,6 +215,8 @@ def scan(
                     print_pyroscope_packages(pyroscope_data)
                 if choice == "Runtime Security tool detected packages":
                     print_falco_packages(falco_found_extra_packages)
+                if choice == "Renovate report":
+                    print_renovate_report(renovate_report)
                 if choice == "Final report":
                     click.echo("Vulnerable packages that can be uninstalled from the docker image are:")
                     click.echo(final_report)

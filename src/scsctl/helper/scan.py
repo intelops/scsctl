@@ -1,5 +1,5 @@
 
-from scsctl.helper.renovate import (check_if_node_and_npm_is_installed,check_if_renovate_is_installed_globally,run_renovate_on_a_repository)
+from scsctl.helper.renovate import (check_if_node_and_npm_is_installed,check_if_renovate_is_installed_globally,run_renovate_dry_run_on_a_repository)
 
 from scsctl.helper.pyroscope import (
     get_pyroscope_data,
@@ -28,6 +28,7 @@ from datetime import datetime
 
 import uuid
 import requests
+import json
 
 # def save_status_to_db(batch_id, docker_image_name,pyroscope_app_name = None, pyroscope_url = None, renovate_enabled = False, falco_enabled = False, db_enabled = False, renovate_status = "", sbom_status = False, pyroscope_status = False, falco_status = False, scan_status = False):
 #     cursor, conn = get_cursor()
@@ -124,6 +125,7 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
                         "final_report": final_report,
                         "stats": stats.model_dump(),
                         "renovate_status" : renovate_status,
+                        "renovate_report": [],
                         "rebuild_image_name": "",
                         "rebuild_image_status": ""
                     }
@@ -169,8 +171,8 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
         if(renovate_enabled):
             if(check_if_node_and_npm_is_installed()):
                 if(check_if_renovate_is_installed_globally()):
-                    renovate_process = run_renovate_on_a_repository(token=renovate_repo_token,repo_name=renovate_repo_name)
-                    if renovate_process.returncode == 0:
+                    renovate_status, renovate_log = run_renovate_dry_run_on_a_repository(token=renovate_repo_token,repo_name=renovate_repo_name)
+                    if renovate_status:
                         renovate_status = "Renovate bot ran successfully"
                     else:
                         renovate_status = "Error running renovate bot"
@@ -230,6 +232,7 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
             "final_report": final_report,
             "stats": stats.model_dump(),
             "renovate_status" : renovate_status,
+            "renovate_report": renovate_log,
             "rebuild_image_name": rebuild_image_response["image"] if rebuild_image_response else "",
             "rebuild_image_status": rebuild_image_response["status"] if rebuild_image_response else ""
         }
@@ -245,6 +248,7 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
             "final_report": [],
             "stats": {},
             "renovate_status" : "Error",
+            "renovate_report": [],
             "rebuild_image_name": "",
             "rebuild_image_status": ""
         }

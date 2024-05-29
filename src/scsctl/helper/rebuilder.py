@@ -1,7 +1,7 @@
 import os
 import time
-import tarfile
-from kubernetes import client, config, watch
+from kubernetes import client, config
+import subprocess
 
 def build_image_with_kaniko_and_download(dockerfile_path, image_name, image_tag):
     """Build a Docker image using Kaniko and download it as a tar file.
@@ -95,5 +95,57 @@ def build_image_with_kaniko_and_download(dockerfile_path, image_name, image_tag)
     # Delete the Kaniko job
     batch_api.delete_namespaced_job(name=job_name, namespace="default")
 
-# dockerfile_path = "/home/jegath/Documents/work/scsctl/testDockerfile"
+dockerfile_path = "/home/jegath/Documents/work/scsctl/testDockerfile"
 # build_image_with_kaniko_and_download(dockerfile_path, "rebuilded-image", "latest")
+
+
+from datetime import datetime
+
+def getTimestamp():
+    # Get the current time
+    now = datetime.now()
+
+    # Extract and format the components
+    month = now.strftime("%m")  # Month
+    day = now.strftime("%d")    # Day
+    year = now.strftime("%Y")   # Year
+    minute = now.strftime("%M") # Minutes
+    second = now.strftime("%S") # Seconds
+    millisecond = now.strftime("%f")[:3]  # Milliseconds (first 3 digits of microsecond part)
+    nanosecond = f"{now.microsecond * 1000:09d}"[-3:]  # Nanoseconds (last 3 digits)
+
+    # Combine to the desired format
+    date_time_str = f"{month}{day}{year}{minute}{second}{millisecond}{nanosecond}"
+    
+    return date_time_str
+
+def build_image_with_buildah(docker_file, image_name, repo_dir):
+    image_tag = getTimestamp()
+    subprocess.run(["buildah", "build", "-f", docker_file, "-t", f"{image_name}:{image_tag}", repo_dir])
+
+def copy_and_build_image_with_buildah(dockerfile_path, image_name):
+    image_tag = getTimestamp()
+    # Check if dockerfile_path is a github repo url or a local path
+    if dockerfile_path.startswith("http://") or dockerfile_path.startswith("https://"):
+        # Clone the repository to a temporary directory
+        repo_dir = "/tmp/proact_temp_repo"
+        subprocess.run(["git", "clone", dockerfile_path, repo_dir])
+        # Get the Dockerfile path from the repository
+        docker_file = os.path.join(repo_dir, "Dockerfile")
+        # Build the image using Buildah
+        subprocess.run(["buildah", "build", "-f", docker_file, "-t", f"{image_name}:{image_tag}", repo_dir])
+        # Remove the repository directory
+        subprocess.run(["rm", "-rf", repo_dir])
+    else:
+        # Build the image using Buildah
+        # Copy the Dockerfile folder to /tmp/proact_temp_repo
+        repo_dir = "/tmp/proact_temp_repo"
+        base_dir = os.path.dirname(dockerfile_path)
+        file_name = os.path.basename(dockerfile_path)
+        subprocess.run(["cp", "-r", base_dir, repo_dir])
+        docker_file = os.path.join(repo_dir, file_name)
+        subprocess.run(["buildah", "build", "-f", docker_file, "-t", f"{image_name}:{image_tag}", repo_dir])
+        # Remove the repository directory if exists
+        subprocess.run(["rm", "-rf", repo_dir])
+
+    print(f"Image '{image_name}:{image_tag}' built successfully")

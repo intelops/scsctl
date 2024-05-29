@@ -7,7 +7,7 @@ import shutil
 from tabulate import tabulate
 import json
 from scsctl.helper.model import Stats
-from scsctl.helper.rebuilder import build_image_with_kaniko_and_download
+from scsctl.helper.rebuilder import build_image_with_buildah, build_image_with_kaniko_and_download
 
 custom_style_fancy = Style(
     [
@@ -68,6 +68,47 @@ def modify_and_build_docker_images(file_paths: list, package_names: list, batch_
         if os.path.exists("./temp"):
             shutil.rmtree("./temp/")
         counter += 1
+
+def modify_and_build_docker_image_with_buildah(file_path: str, package_names: list, batch_id: str):
+    repo_dir = "./tmp/proact_temp_repo"
+    if file_path.startswith("http://") or file_path.startswith("https://"):
+        # Clone the repository to a temporary directory
+        subprocess.run(["git", "clone", file_path, repo_dir])
+        # Get the Dockerfile path from the repository
+        docker_file = os.path.join(repo_dir, "Dockerfile")
+    else:
+        # Copy the Dockerfile folder to /tmp/proact_temp_repo
+        base_dir = os.path.dirname(file_path)
+        file_name = os.path.basename(file_path)
+        subprocess.run(["cp", "-r", base_dir, repo_dir])
+        docker_file = os.path.join(repo_dir, file_name)
+
+    # # Create a new file which contains all the packages names to uninstall
+    with open(f"{repo_dir}/packages.txt", "w") as f:
+        f.write("\n".join(package_names))
+    # Add the uninstall commands at the end of the file
+    with open(f"./temp/{file_name}", "a") as f:
+        f.write("\nCOPY packages.txt /tmp/packages.txt")
+        f.write(
+            '\nRUN while read -r package; do \\\n   if dpkg-query -W --showformat=\'${Essential}\' "$package" | grep -q \'^no$\'; then \\\n   apt-get remove -y "$package"; \\\n    else \\\n   echo "Skipping essential package: $package"; \\\n   fi; \\\ndone < /tmp/packages.txt'
+        )
+
+    # Build the docker image with the modified Dockerfile and tag it with the batch id
+    click.echo("Building the docker image...")
+    try:
+        build_image_with_buildah(docker_file, "proact-rebuilded-image", repo_dir)
+    except Exception as e:
+        click.echo(f"Error building the docker image: {e}")
+        return False
+    
+    # Remove the temp folder
+    if os.path.exists(repo_dir):
+        shutil.rmtree(repo_dir)
+    return True
+
+    
+
+
 
 def modify_and_build_docker_image(folder_path: str, package_nammes: list, bacth_id: str):
     # Make a copy of folder in a ./temp folder, create folder if it doesn't exist
