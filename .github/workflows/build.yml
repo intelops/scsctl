@@ -5,7 +5,7 @@ name: scsctl build
 
 on:
   push:
-    branches: [ "main","feat/capten_integration" ]
+    branches: [ "main","feat/capten_integration", "feat/kaniko-build"]
   pull_request:
     branches: [ "main", "feat/capten_integration" ]
   workflow_dispatch:
@@ -36,21 +36,21 @@ jobs:
     - name: Install cosign
       uses: sigstore/gh-action-sigstore-python@v2.0.0
       with:
-        inputs: dist/scsctl-0.0.6.7-py3-none-any.whl
+        inputs: dist/scsctl-0.0.6.8-py3-none-any.whl
     - name: Sign with sigstore using GitHub App credentials
       run: |
-          sigstore sign --overwrite dist/scsctl-0.0.6.7-py3-none-any.whl
+          sigstore sign --overwrite dist/scsctl-0.0.6.8-py3-none-any.whl
     - name: Archive production artifacts
       uses: actions/upload-artifact@v3
       with:
         name: dist
         path: |
           dist
-    - name: Copy dist/scsctl-0.0.6.7.tar.gz dist/scsctl-0.0.6.7-py3-none-any.whl to release directory
+    - name: Copy dist/scsctl-0.0.6.8.tar.gz dist/scsctl-0.0.6.8-py3-none-any.whl to release directory
       run: |
         mkdir -p release
-        cp dist/scsctl-0.0.6.7.tar.gz release/scsctl-0.0.6.7.tar.gz
-        cp dist/scsctl-0.0.6.7-py3-none-any.whl release/scsctl-0.0.6.7-py3-none-any.whl
+        cp dist/scsctl-0.0.6.8.tar.gz release/scsctl-0.0.6.8.tar.gz
+        cp dist/scsctl-0.0.6.8-py3-none-any.whl release/scsctl-0.0.6.8-py3-none-any.whl
           
     - name: Publish distribution 📦 to Test PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
