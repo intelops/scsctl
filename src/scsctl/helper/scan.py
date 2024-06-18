@@ -98,7 +98,7 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
                             sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages, is_api = is_api
                         )
                     if rebuild_image:
-                        modify_and_build_docker_image(docker_file_folder_path, pyroscope_found_extra_packages, batch_id)
+                        modify_and_build_docker_image(docker_file_folder_path, pyroscope_found_extra_packages, is_api)
                     if db_enabled:
                         if(dgraph_enabled):
                             save_sbom_data_to_dgraph(sbom_data=sbom_report, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
@@ -150,7 +150,7 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
                     )
 
                 if rebuild_image:
-                    modify_and_build_docker_image(docker_file_folder_path, pyroscope_found_extra_packages, batch_id)
+                    modify_and_build_docker_image(docker_file_folder_path, pyroscope_found_extra_packages, is_api)
                 if db_enabled:
                     if(dgraph_enabled):
                         save_sbom_data_to_dgraph(sbom_data=sbom_report, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})

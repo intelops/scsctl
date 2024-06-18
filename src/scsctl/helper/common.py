@@ -7,7 +7,7 @@ import shutil
 from tabulate import tabulate
 import json
 from scsctl.helper.model import Stats
-from scsctl.helper.rebuilder import build_image_with_buildah, build_image_with_kaniko_and_download
+from scsctl.helper.rebuilder import build_image_with_buildah, build_image_with_buildah, build_image_with_kaniko_and_download, getTimestamp
 
 custom_style_fancy = Style(
     [
@@ -106,45 +106,83 @@ def modify_and_build_docker_image_with_buildah(file_path: str, package_names: li
         shutil.rmtree(repo_dir)
     return True
 
-    
-
-
-
-def modify_and_build_docker_image(folder_path: str, package_nammes: list, bacth_id: str):
-    # Make a copy of folder in a ./temp folder, create folder if it doesn't exist
-    # Check if folder_path is a folder or file, if its file take the folder path
-    if not os.path.isdir(folder_path):
-        file_name = os.path.basename(folder_path)
-        folder_path = os.path.dirname(folder_path)
-    if os.path.exists("./temp"):
-        shutil.rmtree("./temp/")
-    shutil.copytree(folder_path, "./temp/")
-
-    # # Create a new file which contains all the packages names to uninstall
-    with open("./temp/packages.txt", "w") as f:
-        f.write("\n".join(package_nammes))
+def modify_dockerfile(file_path: str, package_names: list):
+    with open("/tmp/proact_temp_repo/packages.txt", "w") as f:
+        f.write("\n".join(package_names))
     # Add the uninstall commands at the end of the file
-    with open(f"./temp/{file_name}", "a") as f:
+    with open(file_path, "a") as f:
         f.write("\nCOPY packages.txt /tmp/packages.txt")
         f.write(
             '\nRUN while read -r package; do \\\n   if dpkg-query -W --showformat=\'${Essential}\' "$package" | grep -q \'^no$\'; then \\\n   apt-get remove -y "$package"; \\\n    else \\\n   echo "Skipping essential package: $package"; \\\n   fi; \\\ndone < /tmp/packages.txt'
         )
 
-    # Build the docker image with the modified Dockerfile and tag it with the batch id
-    click.echo("Building the docker image...")
-    try:
-        # Abosule path of the temp folder
-        absoulute_path = os.path.abspath("./temp/")
-        build_image_with_kaniko_and_download(f"{absoulute_path}/{file_name}", "rebuilded-image", "latest")
-        # subprocess.check_output(["docker", "build", "-t", f"{bacth_id}", "./temp/"])
-    except subprocess.CalledProcessError as e:
-        click.echo(f"Error building the docker image: {e}")
-        return False
+def modify_and_build_docker_image(file_path: str, package_names: list, is_api=False):
+    image_tag = getTimestamp()
+    if file_path.startswith("http://") or file_path.startswith("https://"):
+        # Clone the repository to a temporary directory
+        repo_dir = "/tmp/proact_temp_repo"
+        subprocess.run(["git", "clone", file_path, repo_dir])
+        # Get the Dockerfile path from the repository
+        docker_file = os.path.join(repo_dir, "Dockerfile")
+        modify_dockerfile(docker_file, package_names)
+        # Build the image using Buildah
+        if(is_api):
+            build_image_with_kaniko_and_download(docker_file, "proact-rebuilded-image", image_tag)
+        else:
+            build_image_with_buildah(docker_file, "proact-rebuilded-image", repo_dir)
+        # Remove the repository directory
+        subprocess.run(["rm", "-rf", repo_dir])
+    else:
+        # Build the image using Buildah
+        # Copy the Dockerfile folder to /tmp/proact_temp_repo
+        repo_dir = "/tmp/proact_temp_repo"
+        base_dir = os.path.dirname(file_path)
+        file_name = os.path.basename(file_path)
+        subprocess.run(["cp", "-r", base_dir, repo_dir])
+        docker_file = os.path.join(repo_dir, file_name)
+        modify_dockerfile(docker_file, package_names)
+        if(is_api):
+            build_image_with_kaniko_and_download(docker_file, "proact-rebuilded-image", image_tag)
+        else:
+            build_image_with_buildah(docker_file, "proact-rebuilded-image", repo_dir)
+        # Remove the repository directory if exists
+        subprocess.run(["rm", "-rf", repo_dir])
 
-    # Remove the temp folder
-    if os.path.exists("./temp"):
-        shutil.rmtree("./temp/")
-    return True
+# def modify_and_build_docker_image(folder_path: str, package_nammes: list, bacth_id: str, is_api=False):
+#     # Make a copy of folder in a ./temp folder, create folder if it doesn't exist
+#     # Check if folder_path is a folder or file, if its file take the folder path
+#     if not os.path.isdir(folder_path):
+#         file_name = os.path.basename(folder_path)
+#         folder_path = os.path.dirname(folder_path)
+#     if os.path.exists("./temp"):
+#         shutil.rmtree("./temp/")
+#     shutil.copytree(folder_path, "./temp/")
+
+#     # # Create a new file which contains all the packages names to uninstall
+    # with open("./temp/packages.txt", "w") as f:
+    #     f.write("\n".join(package_nammes))
+    # # Add the uninstall commands at the end of the file
+    # with open(f"./temp/{file_name}", "a") as f:
+    #     f.write("\nCOPY packages.txt /tmp/packages.txt")
+    #     f.write(
+    #         '\nRUN while read -r package; do \\\n   if dpkg-query -W --showformat=\'${Essential}\' "$package" | grep -q \'^no$\'; then \\\n   apt-get remove -y "$package"; \\\n    else \\\n   echo "Skipping essential package: $package"; \\\n   fi; \\\ndone < /tmp/packages.txt'
+    #     )
+
+#     # Build the docker image with the modified Dockerfile and tag it with the batch id
+#     click.echo("Building the docker image...")
+#     try:
+#         # Abosule path of the temp folder
+#         absoulute_path = os.path.abspath("./temp/")
+#         build_image_with_kaniko_and_download(f"{absoulute_path}/{file_name}", "rebuilded-image", "latest")
+#         # subprocess.check_output(["docker", "build", "-t", f"{bacth_id}", "./temp/"])
+#     except subprocess.CalledProcessError as e:
+#         click.echo(f"Error building the docker image: {e}")
+#         return False
+
+#     # Remove the temp folder
+#     if os.path.exists("./temp"):
+#         shutil.rmtree("./temp/")
+#     return True
 
 
 def generate_final_report(sbom_package_names, pyroscope_package_names=[], falco_found_extra_packages=[], is_api=False):

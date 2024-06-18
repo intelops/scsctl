@@ -94,8 +94,9 @@ def build_image_with_kaniko_and_download(dockerfile_path, image_name, image_tag)
 
     # Delete the Kaniko job
     batch_api.delete_namespaced_job(name=job_name, namespace="default")
+    return f"{image_name}_{image_tag}"
 
-dockerfile_path = "/home/jegath/Documents/work/scsctl/testDockerfile"
+# dockerfile_path = "/home/jegath/Documents/work/scsctl/testDockerfile"
 # build_image_with_kaniko_and_download(dockerfile_path, "rebuilded-image", "latest")
 
 
@@ -122,6 +123,7 @@ def getTimestamp():
 def build_image_with_buildah(docker_file, image_name, repo_dir):
     image_tag = getTimestamp()
     subprocess.run(["buildah", "build", "-f", docker_file, "-t", f"{image_name}:{image_tag}", repo_dir])
+    return f"{image_name}:{image_tag}"
 
 def copy_and_build_image_with_buildah(dockerfile_path, image_name):
     image_tag = getTimestamp()
