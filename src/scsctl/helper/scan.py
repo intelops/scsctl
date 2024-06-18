@@ -52,7 +52,6 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
         final_report = []
         sbom_report = []
         falco_found_extra_packages = []
-        rebuild_image_response = None
         appDetails = AppDetails(
             pyroscope_app_name=pyroscope_app_name, docker_image_name=docker_image_name, pyroscope_url=pyroscope_url
         )
@@ -98,7 +97,7 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
                             sbom_package_names=sbom_report, pyroscope_package_names=pyroscope_found_extra_packages, is_api = is_api
                         )
                     if rebuild_image:
-                        modify_and_build_docker_image(docker_file_folder_path, pyroscope_found_extra_packages, is_api)
+                        rebuild_status, rebuild_image_name = modify_and_build_docker_image(docker_file_folder_path, pyroscope_found_extra_packages, is_api)
                     if db_enabled:
                         if(dgraph_enabled):
                             save_sbom_data_to_dgraph(sbom_data=sbom_report, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
@@ -150,7 +149,7 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
                     )
 
                 if rebuild_image:
-                    modify_and_build_docker_image(docker_file_folder_path, pyroscope_found_extra_packages, is_api)
+                    rebuild_status, rebuild_image_name = modify_and_build_docker_image(docker_file_folder_path, pyroscope_found_extra_packages, is_api)
                 if db_enabled:
                     if(dgraph_enabled):
                         save_sbom_data_to_dgraph(sbom_data=sbom_report, batch_id=batch_id,dgraph_creds={"host": dgraph_db_host, "port": dgraph_db_port})
@@ -233,8 +232,8 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
             "stats": stats.model_dump(),
             "renovate_status" : renovate_status,
             "renovate_report": renovate_log,
-            "rebuild_image_name": rebuild_image_response["image"] if rebuild_image_response else "",
-            "rebuild_image_status": rebuild_image_response["status"] if rebuild_image_response else ""
+            "rebuild_image_name": rebuild_image_name if rebuild_image and rebuild_status else "",
+            "rebuild_image_status": rebuild_status if rebuild_image else ""
         }
     except Exception as e:
         print(f"Error running scan {e}")

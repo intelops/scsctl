@@ -117,36 +117,41 @@ def modify_dockerfile(file_path: str, package_names: list):
         )
 
 def modify_and_build_docker_image(file_path: str, package_names: list, is_api=False):
-    image_tag = getTimestamp()
-    if file_path.startswith("http://") or file_path.startswith("https://"):
-        # Clone the repository to a temporary directory
-        repo_dir = "/tmp/proact_temp_repo"
-        subprocess.run(["git", "clone", file_path, repo_dir])
-        # Get the Dockerfile path from the repository
-        docker_file = os.path.join(repo_dir, "Dockerfile")
-        modify_dockerfile(docker_file, package_names)
-        # Build the image using Buildah
-        if(is_api):
-            build_image_with_kaniko_and_download(docker_file, "proact-rebuilded-image", image_tag)
+    try:
+        image_tag = getTimestamp()
+        if file_path.startswith("http://") or file_path.startswith("https://"):
+            # Clone the repository to a temporary directory
+            repo_dir = "/tmp/proact_temp_repo"
+            subprocess.run(["git", "clone", file_path, repo_dir])
+            # Get the Dockerfile path from the repository
+            docker_file = os.path.join(repo_dir, "Dockerfile")
+            modify_dockerfile(docker_file, package_names)
+            # Build the image using Buildah
+            if(is_api):
+                new_image = build_image_with_kaniko_and_download(docker_file, "proact-rebuilded-image", image_tag)
+            else:
+                new_image = build_image_with_buildah(docker_file, "proact-rebuilded-image", repo_dir)
+            # Remove the repository directory
+            subprocess.run(["rm", "-rf", repo_dir])
         else:
-            build_image_with_buildah(docker_file, "proact-rebuilded-image", repo_dir)
-        # Remove the repository directory
-        subprocess.run(["rm", "-rf", repo_dir])
-    else:
-        # Build the image using Buildah
-        # Copy the Dockerfile folder to /tmp/proact_temp_repo
-        repo_dir = "/tmp/proact_temp_repo"
-        base_dir = os.path.dirname(file_path)
-        file_name = os.path.basename(file_path)
-        subprocess.run(["cp", "-r", base_dir, repo_dir])
-        docker_file = os.path.join(repo_dir, file_name)
-        modify_dockerfile(docker_file, package_names)
-        if(is_api):
-            build_image_with_kaniko_and_download(docker_file, "proact-rebuilded-image", image_tag)
-        else:
-            build_image_with_buildah(docker_file, "proact-rebuilded-image", repo_dir)
-        # Remove the repository directory if exists
-        subprocess.run(["rm", "-rf", repo_dir])
+            # Build the image using Buildah
+            # Copy the Dockerfile folder to /tmp/proact_temp_repo
+            repo_dir = "/tmp/proact_temp_repo"
+            base_dir = os.path.dirname(file_path)
+            file_name = os.path.basename(file_path)
+            subprocess.run(["cp", "-r", base_dir, repo_dir])
+            docker_file = os.path.join(repo_dir, file_name)
+            modify_dockerfile(docker_file, package_names)
+            if(is_api):
+                new_image = build_image_with_kaniko_and_download(docker_file, "proact-rebuilded-image", image_tag)
+            else:
+                new_image = build_image_with_buildah(docker_file, "proact-rebuilded-image", repo_dir)
+            # Remove the repository directory if exists
+            subprocess.run(["rm", "-rf", repo_dir])
+        return True, new_image
+    except Exception as e:
+        click.echo(f"Error building the docker image: {e}")
+        return False, None
 
 # def modify_and_build_docker_image(folder_path: str, package_nammes: list, bacth_id: str, is_api=False):
 #     # Make a copy of folder in a ./temp folder, create folder if it doesn't exist
