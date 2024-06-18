@@ -52,6 +52,7 @@ def run_scan(docker_image_name, batch_id = None ,pyroscope_enabled = False,pyros
         final_report = []
         sbom_report = []
         falco_found_extra_packages = []
+        renovate_log = ""
         appDetails = AppDetails(
             pyroscope_app_name=pyroscope_app_name, docker_image_name=docker_image_name, pyroscope_url=pyroscope_url
         )

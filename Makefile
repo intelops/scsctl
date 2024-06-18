@@ -1,7 +1,7 @@
 install:
 	pip uninstall -y scsctl
 	python -m build
-	pip install dist/scsctl-0.0.6.9-py3-none-any.whl
+	pip install dist/scsctl-0.0.6.10-py3-none-any.whl
 	clear
 	echo "scsctl has been installed"
 
