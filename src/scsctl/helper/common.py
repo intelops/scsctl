@@ -120,8 +120,8 @@ def modify_and_build_docker_image(file_path: str, package_names: list, is_api=Fa
     try:
         repo_dir = "/tmp/proact_temp_repo"
         # Delete the repository directory if exists
-        if os.path.exists(repo_dir):
-            shutil.rmtree(repo_dir)
+        # if os.path.exists(repo_dir):
+        #     shutil.rmtree(repo_dir)
         image_tag = getTimestamp()
         if file_path.startswith("http://") or file_path.startswith("https://"):
             # Clone the repository to a temporary directory
