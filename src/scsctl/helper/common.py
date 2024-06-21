@@ -118,7 +118,7 @@ def modify_dockerfile(file_path: str, package_names: list):
 
 def modify_and_build_docker_image(file_path: str, package_names: list, is_api=False):
     try:
-        repo_dir = "/tmp/proact_temp_repo"
+        repo_dir = f"/context/proact_temp_repo_{getTimestamp()}"
         # Delete the repository directory if exists
         # if os.path.exists(repo_dir):
         #     shutil.rmtree(repo_dir)

@@ -41,7 +41,7 @@ def build_image_with_kaniko_and_download(dockerfile_path, image_name, image_tag)
                             image="gcr.io/kaniko-project/executor:latest",
                             args=[
                                 "--dockerfile=%s" % os.path.basename(dockerfile_path),
-                                "--context=/context",
+                                f"--context={build_context}",
                                 "--destination=%s:%s" % (image_name, image_tag),
                                 "--no-push",
                                 f"--tarPath=/context/{image_name}_{image_tag}.tar"
@@ -59,7 +59,7 @@ def build_image_with_kaniko_and_download(dockerfile_path, image_name, image_tag)
                             name="context-volume",
                             host_path=client.V1HostPathVolumeSource(
                                 path=build_context,
-                                type="Directory",
+                                type="DirectoryOrCreate",
                             )
                         )
                     ],
