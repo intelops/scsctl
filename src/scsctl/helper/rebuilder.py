@@ -58,7 +58,7 @@ def build_image_with_kaniko_and_download(dockerfile_path, image_name, image_tag)
                         client.V1Volume(
                             name="context-volume",
                             host_path=client.V1HostPathVolumeSource(
-                                path=build_context,
+                                path="/tmp/proact_temp_repo",
                                 type="DirectoryOrCreate",
                             )
                         )
