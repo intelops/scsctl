@@ -52,6 +52,23 @@ def build_image_with_kaniko_and_download(dockerfile_path, image_name, image_tag)
                                     mount_path="/context",
                                 )
                             ],
+                            affinity=client.V1Affinity(
+                                node_affinity=client.V1NodeAffinity(
+                                    required_during_scheduling_ignored_during_execution=client.V1NodeSelector(
+                                        node_selector_terms=[
+                                            client.V1NodeSelectorTerm(
+                                                match_expressions=[
+                                                    client.V1NodeSelectorRequirement(
+                                                        key="proact-node",
+                                                        operator="In",
+                                                        values=["true"]
+                                                    )
+                                                ]
+                                            )
+                                        ]
+                                    )
+                                )
+                            )
                         )
                     ],
                     volumes=[
