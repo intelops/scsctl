@@ -97,26 +97,26 @@ def build_image_with_kaniko_and_download(dockerfile_path, image_name, image_tag)
     batch_api.create_namespaced_job(body=job, namespace="default")
     print(f"Kaniko job '{job_name}' created to build image '{image_name}:{image_tag}'")
 
-    # Wait for the job to complete
-    while True:
-        time.sleep(5)
-        job_status = batch_api.read_namespaced_job_status(job_name, namespace="default")
-        if job_status.status.succeeded is not None and job_status.status.succeeded > 0:
-            break
-        elif job_status.status.failed is not None and job_status.status.failed > 0:
-            print(f"Kaniko job '{job_name}' failed to build image '{image_name}:{image_tag}'")
-            break
+    # # Wait for the job to complete
+    # while True:
+    #     time.sleep(5)
+    #     job_status = batch_api.read_namespaced_job_status(job_name, namespace="default")
+    #     if job_status.status.succeeded is not None and job_status.status.succeeded > 0:
+    #         break
+    #     elif job_status.status.failed is not None and job_status.status.failed > 0:
+    #         print(f"Kaniko job '{job_name}' failed to build image '{image_name}:{image_tag}'")
+    #         break
 
-    # Once the job is completed, query for the pod with the selector label
-    pods = core_api.list_namespaced_pod(namespace="default", label_selector="app=kaniko-builder")
-    if pods.items:
-        pod_name = pods.items[0].metadata.name
-        print(f"Rebuild logs from pod ': {pod_name}")
-        # Get logs from the pod
-        logs = core_api.read_namespaced_pod_log(name=pod_name, namespace="default")
-        print(logs)
-    else:
-        print("No pod found with selector 'app=kaniko-builder'")
+    # # Once the job is completed, query for the pod with the selector label
+    # pods = core_api.list_namespaced_pod(namespace="default", label_selector="app=kaniko-builder")
+    # if pods.items:
+    #     pod_name = pods.items[0].metadata.name
+    #     print(f"Rebuild logs from pod ': {pod_name}")
+    #     # Get logs from the pod
+    #     logs = core_api.read_namespaced_pod_log(name=pod_name, namespace="default")
+    #     print(logs)
+    # else:
+    #     print("No pod found with selector 'app=kaniko-builder'")
 
     # Delete the Kaniko job
     batch_api.delete_namespaced_job(name=job_name, namespace="default")
