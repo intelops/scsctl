@@ -128,7 +128,7 @@ def modify_and_build_docker_image(file_path: str, package_names: list, is_api=Fa
             subprocess.run(["git", "clone", file_path, repo_dir])
             # Get the Dockerfile path from the repository
             docker_file = os.path.join(repo_dir, "Dockerfile")
-            modify_dockerfile(repo_dir, docker_file, package_names)
+            # modify_dockerfile(repo_dir, docker_file, package_names)
             # Build the image using Buildah
             if(is_api):
                 new_image = build_image_with_kaniko_and_download(docker_file, "proact-rebuilded-image", image_tag)
@@ -143,7 +143,7 @@ def modify_and_build_docker_image(file_path: str, package_names: list, is_api=Fa
             file_name = os.path.basename(file_path)
             subprocess.run(["cp", "-r", base_dir, repo_dir])
             docker_file = os.path.join(repo_dir, file_name)
-            modify_dockerfile(repo_dir, docker_file, package_names)
+            # modify_dockerfile(repo_dir, docker_file, package_names)
             if(is_api):
                 new_image = build_image_with_kaniko_and_download(docker_file, "proact-rebuilded-image", image_tag)
             else:
