@@ -119,7 +119,7 @@ def build_image_with_kaniko_and_download(dockerfile_path, image_name, image_tag)
     #     print("No pod found with selector 'app=kaniko-builder'")
 
     # Delete the Kaniko job
-    batch_api.delete_namespaced_job(name=job_name, namespace="default")
+    # batch_api.delete_namespaced_job(name=job_name, namespace="default")
     return f"{image_name}_{image_tag}"
 
 # dockerfile_path = "/home/jegath/Documents/work/scsctl/testDockerfile"
