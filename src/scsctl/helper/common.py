@@ -106,8 +106,8 @@ def modify_and_build_docker_image_with_buildah(file_path: str, package_names: li
         shutil.rmtree(repo_dir)
     return True
 
-def modify_dockerfile(file_path: str, package_names: list):
-    with open("/tmp/proact_temp_repo/packages.txt", "w") as f:
+def modify_dockerfile(repo_dir: str,file_path: str, package_names: list):
+    with open(f"{repo_dir}/packages.txt", "w") as f:
         f.write("\n".join(package_names))
     # Add the uninstall commands at the end of the file
     with open(file_path, "a") as f:
@@ -120,15 +120,15 @@ def modify_and_build_docker_image(file_path: str, package_names: list, is_api=Fa
     try:
         repo_dir = f"/context/proact_temp_repo_{getTimestamp()}"
         # Delete the repository directory if exists
-        # if os.path.exists(repo_dir):
-        #     shutil.rmtree(repo_dir)
+        if os.path.exists(repo_dir):
+            shutil.rmtree(repo_dir)
         image_tag = getTimestamp()
         if file_path.startswith("http://") or file_path.startswith("https://"):
             # Clone the repository to a temporary directory
             subprocess.run(["git", "clone", file_path, repo_dir])
             # Get the Dockerfile path from the repository
             docker_file = os.path.join(repo_dir, "Dockerfile")
-            modify_dockerfile(docker_file, package_names)
+            modify_dockerfile(repo_dir, docker_file, package_names)
             # Build the image using Buildah
             if(is_api):
                 new_image = build_image_with_kaniko_and_download(docker_file, "proact-rebuilded-image", image_tag)
@@ -143,7 +143,7 @@ def modify_and_build_docker_image(file_path: str, package_names: list, is_api=Fa
             file_name = os.path.basename(file_path)
             subprocess.run(["cp", "-r", base_dir, repo_dir])
             docker_file = os.path.join(repo_dir, file_name)
-            modify_dockerfile(docker_file, package_names)
+            modify_dockerfile(repo_dir, docker_file, package_names)
             if(is_api):
                 new_image = build_image_with_kaniko_and_download(docker_file, "proact-rebuilded-image", image_tag)
             else:
