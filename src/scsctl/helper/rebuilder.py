@@ -86,6 +86,13 @@ def build_image_with_kaniko_and_download(dockerfile_path, image_name, image_tag)
         )
     )
 
+     # Delete the job if it already exists
+    try:
+        batch_api.delete_namespaced_job(name=job_name, namespace="default")
+    except client.rest.ApiException as e:
+        if e.status != 404:
+            print(f"Failed to delete job '{job_name}': {e}")
+
     # Create the Kaniko job
     batch_api.create_namespaced_job(body=job, namespace="default")
     print(f"Kaniko job '{job_name}' created to build image '{image_name}:{image_tag}'")
