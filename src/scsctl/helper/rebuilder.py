@@ -25,6 +25,8 @@ def build_image_with_kaniko_and_download(dockerfile_path, image_name, image_tag)
     # Get the build context directory from the Dockerfile path
     build_context = os.path.dirname(dockerfile_path)
 
+    os.chmod(build_context, 0o777)
+
     # Create a Kaniko job to build the Docker image
     job_name = "kaniko-build-job"
     job = client.V1Job(

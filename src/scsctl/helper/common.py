@@ -118,10 +118,13 @@ def modify_dockerfile(file_path: str, package_names: list):
 
 def modify_and_build_docker_image(file_path: str, package_names: list, is_api=False):
     try:
+        repo_dir = "/tmp/proact_temp_repo"
+        # Delete the repository directory if exists
+        if os.path.exists(repo_dir):
+            shutil.rmtree(repo_dir)
         image_tag = getTimestamp()
         if file_path.startswith("http://") or file_path.startswith("https://"):
             # Clone the repository to a temporary directory
-            repo_dir = "/tmp/proact_temp_repo"
             subprocess.run(["git", "clone", file_path, repo_dir])
             # Get the Dockerfile path from the repository
             docker_file = os.path.join(repo_dir, "Dockerfile")
@@ -136,7 +139,6 @@ def modify_and_build_docker_image(file_path: str, package_names: list, is_api=Fa
         else:
             # Build the image using Buildah
             # Copy the Dockerfile folder to /tmp/proact_temp_repo
-            repo_dir = "/tmp/proact_temp_repo"
             base_dir = os.path.dirname(file_path)
             file_name = os.path.basename(file_path)
             subprocess.run(["cp", "-r", base_dir, repo_dir])
