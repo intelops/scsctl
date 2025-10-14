@@ -29,7 +29,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # FROM python:3.12.0b3-slim@sha256:8e3ef64883278384c49293caf631d614b4bfdac7bb494d44e17cf2d711ce2652
-FROM python:3.10-slim@sha256:2bac43769ace90ebd3ad83e5392295e25dfc58e58543d3ab326c3330b505283d
+FROM python:3.10-slim@sha256:621488956f7e14ca249420e37dbecd59f669a8776bef0429aa89a4ebd8c6de9e
 
 RUN groupadd -g 999 python && \
     useradd -r -u 999 -g python python
